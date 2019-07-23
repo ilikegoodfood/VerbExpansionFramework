@@ -1,0 +1,6 @@
+D:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\MonsterMash\Assemblies\MonsterMash.dll
+D:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\MonsterMash\Source\Monster Mash\obj\Debug\MonsterMash.dll
+D:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\MonsterMash\Source\Monster Mash\obj\Debug\MonsterMash.csprojResolveAssemblyReference.cache
+D:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\MonsterMash (B19)\Source\Monster Mash\obj\Debug\MonsterMash.csprojResolveAssemblyReference.cache
+D:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\MonsterMash (B19)\Source\Monster Mash\obj\Debug\MonsterMash.dll
+D:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\MonsterMash (B19)\Assemblies\MonsterMash.dll

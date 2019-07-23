@@ -1,0 +1,8 @@
+D:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\Variable Bleed Rate Framework (B19)\Assemblies\VariableBleedRAte.dll
+D:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\Variable Bleed Rate Framework (B19)\Source\Monster Mash\obj\Debug\VariableBleedRAte.dll
+D:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\Variable Bleed Rate Framework (B19)\Source\Monster Mash\obj\Debug\VariableBleedRAte.csprojResolveAssemblyReference.cache
+D:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\Variable Bleed Rate Framework (B19)\Source\Variable Bleed Rate Framework\obj\Debug\VariableBleedRate.dll
+D:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\Variable Bleed Rate Framework (B19)\Source\Variable Bleed Rate Framework\obj\Debug\VariableBleedRate.csprojResolveAssemblyReference.cache
+D:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\Variable Bleed Rate Framework (1.0)\Assemblies\VariableBleedRate.dll
+D:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\Variable Bleed Rate Framework (1.0)\Source\Variable Bleed Rate Framework\obj\Debug\VariableBleedRate.csprojResolveAssemblyReference.cache
+D:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\Variable Bleed Rate Framework (1.0)\Source\Variable Bleed Rate Framework\obj\Debug\VariableBleedRate.dll

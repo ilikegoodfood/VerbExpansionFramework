@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ModMetaData>
+	<name>Verb Expansion Framework</name>
+	<author>ilikegoodfood</author>
+	<supportedVersions><li>1.0</li></supportedVersions>
+	<description>
+	This Framework implements a number of improvements to the handling of attack verbs in RimWorld.
+	- Animals will now recognize and use ranged attack verbs.
+	- Pawns will recognize and use anged attack verbs that are provided through hediffs.
+	- The chooseRangedVerb function will allow non-colonist pawns to automatically select the most effective ranged verb from all of the ranged verbs that they posses.
+	- The current weapon button has been changed. Now it shows the currently assigned verb, be that from a weapon, weapon attachment, race definition or hediff. Clicking on it will now bring up a text list of all available ranged verbs, so that you can choose which one they will use.
+	
+	More enhancements to verbs are expected to follow, such as smoke-pop-belts and shield belts for animals and mechanoids, verbs with a cooldown period and much more besides.
+	
+	This is intended as a re-implementation of the RangedAnimalFramework for 1.0, with new, more powerful features and greater compatibility.
+	</description>
+</ModMetaData>

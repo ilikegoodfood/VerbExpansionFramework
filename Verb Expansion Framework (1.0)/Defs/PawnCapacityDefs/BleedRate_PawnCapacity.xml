@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<Defs>
+
+	<PawnCapacityDef>
+		<defName>BleedRate</defName>
+		<label>bleed rate</label>
+		<listOrder>9</listOrder>
+		<showOnHumanlikes>false</showOnHumanlikes>
+		<showOnAnimals>false</showOnAnimals>
+		<showOnMechanoids>false</showOnMechanoids>
+	</PawnCapacityDef>
+	
+</Defs>

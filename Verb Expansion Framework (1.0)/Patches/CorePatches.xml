@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<Patch>
+	<Operation Class="PatchOperationSequence">
+		<success>Normal</success>
+		<operations>
+			<!-- == Add VEF_JobGiver_ManhunterRanged = -->
+			<li Class="PatchOperationReplace">
+				<xpath>/Defs/ThinkTreeDef[defName = "MentalStateNonCritical"]/thinkRoot/subNodes/li[@Class="ThinkNode_ConditionalMentalStateClass"]/subNodes/li[@Class="ThinkNode_Priority"]/subNodes/li[@Class="JobGiver_Manhunter"]</xpath>
+				<value>
+					<li Class="VerbExpansionFramework.VEF_JobGiver_ManhunterRanged" />
+					<li Class="JobGiver_Manhunter" />
+				</value>
+			</li>
+			<li Class="PatchOperationAdd">
+				<xpath>Defs/ThingDef[thingClass="Pawn"]/comps</xpath>
+				<value>
+					<li>
+						<compClass>VerbExpansionFramework.VEF_Comp_Pawn_RangedVerbs</compClass>
+					</li>
+				</value>
+			</li>
+			
+			<!-- ========== For Testing Only ========= -->
+			<!--- = Add RangedVerb to Human ThingDef = -->
+			<!--<li Class="PatchOperationAdd">
+				<xpath>/Defs/ThingDef[defName = "Human"]</xpath>
+				<value>
+					<verbs>
+						<li>
+							<verbClass>Verb_Shoot</verbClass>
+							<accuracyTouch>0.7</accuracyTouch>
+							<accuracyShort>0.8</accuracyShort>
+							<accuracyMedium>0.9</accuracyMedium>
+							<accuracyLong>0.85</accuracyLong>
+							<hasStandardCommand>true</hasStandardCommand>
+							<defaultProjectile>Bullet_Revolver</defaultProjectile>
+							<warmupTime>3</warmupTime>
+							<burstShotCount>1</burstShotCount>
+							<minRange>6</minRange>
+							<range>27</range>
+							<soundCast>ChargeLance_Fire</soundCast>
+							<soundCastTail>GunTail_Light</soundCastTail>
+							<muzzleFlashScale>12</muzzleFlashScale>
+						</li>
+					</verbs>
+				</value>
+			</li>-->
+		</operations>
+	</Operation>
+</Patch>
