@@ -16,6 +16,11 @@ namespace VerbExpansionFramework
         {
             this.pawn = pawn;
             UpdateCurRangedVerb();
+
+            if (this.verb != null && this.verb.verbProps.hasStandardCommand == true)
+            {
+                this.hotKey = KeyBindingDefOf.Misc5;
+            }
         }
 
         public override bool Visible
@@ -57,9 +62,7 @@ namespace VerbExpansionFramework
 
         public override void MergeWith(Gizmo other)
         {
-            base.MergeWith(other);
-            VEF_Gizmo_SwitchRangedVerb merge_TargetVerb = other as VEF_Gizmo_SwitchRangedVerb;
-            if (merge_TargetVerb == null)
+            if (!(other is VEF_Gizmo_SwitchRangedVerb merge_TargetVerb))
             {
                 Log.ErrorOnce("Tried to merge Command_VerbTarget with unexpected type", 73406263, false);
                 return;

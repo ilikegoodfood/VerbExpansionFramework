@@ -80,7 +80,7 @@ namespace VerbExpansionFramework
 
         private static void CalculateBleedRatePostfix(HediffSet __instance, ref float __result)
         {
-            __result *= StatExtension.GetStatValue(__instance.pawn, StatDef.Named("BleedRate"), true);
+            __result *= __instance.pawn.health.capacities.GetLevel(VEF_DefOf.BleedRate);
         }
 
         private static void CheckForAutoAttackPostfix(JobDriver_Wait __instance)
