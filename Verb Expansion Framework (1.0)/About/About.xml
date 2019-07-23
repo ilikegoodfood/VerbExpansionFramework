@@ -6,9 +6,9 @@
 	<description>
 	This Framework implements a number of improvements to the handling of attack verbs in RimWorld.
 	- Animals will now recognize and use ranged attack verbs.
-	- Pawns will recognize and use anged attack verbs that are provided through hediffs.
-	- The chooseRangedVerb function will allow non-colonist pawns to automatically select the most effective ranged verb from all of the ranged verbs that they posses.
-	- The current weapon button has been changed. Now it shows the currently assigned verb, be that from a weapon, weapon attachment, race definition or hediff. Clicking on it will now bring up a text list of all available ranged verbs, so that you can choose which one they will use.
+	- All pawns will recognize and use anged attack verbs that are provided through apparel, equipment, hediffs and race definitions.
+	- AI will approximate the useful of any ranged verbs they possess, and select the most effective.
+	- A new `switch verb` has been added alongside the equipment gizmo. If a colonist has any ranged verb that is not from their equipment, this gizmo will display it and allow you to choose which ranged verb they will use in combat (colonist must be drafted to change selected verb).
 	
 	More enhancements to verbs are expected to follow, such as smoke-pop-belts and shield belts for animals and mechanoids, verbs with a cooldown period and much more besides.
 	
