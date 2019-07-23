@@ -2,12 +2,12 @@
 
 <Defs>
 
-	<HediffDef ParentName="AddedBodyPartBase">
+	<!--<HediffDef ParentName="AddedBodyPartBase">
 		<defName>TestBodyMountedCannon</defName>
 		<label>test body mounted cannon</label>
-		<labelNoun>a body mounted cannon</labelNoun>
+		<labelNoun>a body mounted cannon</labelNoun>-->
 		<!--<spawnThingOnRemoved>ArchotechArm</spawnThingOnRemoved>-->
-		<comps>
+		<!--<comps>
 		    <li Class="HediffCompProperties_VerbGiver">
 				<verbs>
 					<li>
@@ -33,6 +33,6 @@
 			<partEfficiency>1</partEfficiency>
 			<betterThanNatural>true</betterThanNatural>
 		</addedPartProps>
-    </HediffDef>
+    </HediffDef>-->
 
 </Defs>
