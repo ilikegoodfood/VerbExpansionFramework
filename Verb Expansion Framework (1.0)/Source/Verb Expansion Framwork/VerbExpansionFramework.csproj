@@ -58,7 +58,7 @@
     <Compile Include="VEF_Gizmo_SwitchRangedVerb.cs" />
     <None Include="OldCode\VEF_AttackTargetFinder.cs" />
     <Compile Include="VEF_JobGiver_ManhunterRanged.cs" />
-    <Compile Include="hamronyPatches.cs" />
+    <Compile Include="HarmonyPatches.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup />
