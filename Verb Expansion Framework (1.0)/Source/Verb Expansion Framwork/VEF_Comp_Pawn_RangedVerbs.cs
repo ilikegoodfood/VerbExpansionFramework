@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Verse;
 using RimWorld;
 using UnityEngine;
@@ -41,17 +42,41 @@ namespace VerbExpansionFramework
         {
             this.rangedVerbGizmo = new VEF_Gizmo_SwitchRangedVerb(this.Pawn)
             {
+                action = delegate (Thing target)
+                {
+                    IEnumerable<Pawn> selectedPawns = Find.Selector.SelectedObjects.Where(delegate (object x)
+                    {
+                        Pawn pawn = x as Pawn;
+                        return pawn != null && pawn.IsColonistPlayerControlled && pawn.Drafted;
+                    }).Cast<Pawn>();
+                    foreach (Pawn pawn2 in selectedPawns)
+                    {
+                        string text;
+                        VEF_FloatMenuUtility.GetAttackAction(pawn2, target, out text)?.Invoke();
+                    }
+                },
                 disabled = true,
                 disabledReason = "IsNotDrafted".Translate(this.Pawn.LabelShortCap, this.Pawn),
-                order = +1f
+                hotKey = KeyBindingDefOf.Misc5,
+                order = +1f,
+                targetingParams = TargetingParameters.ForAttackAny(),
             };
             if (this.Pawn.IsColonist)
             {
-                if (this.Pawn.Drafted)
+                if (this.Pawn.Drafted && !Pawn.story.WorkTagIsDisabled(WorkTags.Violent))
                 {
                     this.rangedVerbGizmo.disabled = false;
                 }
-                if (curRangedVerb == null || (rangedVerbs.Count == 1 && curRangedVerb.EquipmentCompSource != null && curRangedVerb.verbProps.isPrimary))
+                else if (Pawn.story.WorkTagIsDisabled(WorkTags.Violent))
+                {
+                    this.rangedVerbGizmo.disabledReason = "IsIncapableOfViolenceLower".Translate(pawn.LabelShort, pawn);
+                }
+
+                if (ShouldUseSquadAttackGizmo())
+                {
+                    this.visible = false;
+                }
+                else if (curRangedVerb == null || (rangedVerbs.Count == 1 && curRangedVerb.EquipmentCompSource != null && curRangedVerb.verbProps.isPrimary))
                 {
                     this.visible = false;
                 }
@@ -230,6 +255,65 @@ namespace VerbExpansionFramework
                 }
             }
             return;
+        }
+
+        public static bool ShouldUseSquadAttackGizmo()
+        {
+            return AtLeastOneSelectedColonistHasRangedVerb() && AtLeastTwoSelectedColonistsHaveDifferentRangedVerbs();
+        }
+
+        private static bool AtLeastOneSelectedColonistHasRangedVerb()
+        {
+            List<object> selectedObjectsListForReading = Find.Selector.SelectedObjectsListForReading;
+            for (int i = 0; i < selectedObjectsListForReading.Count; i++)
+            {
+                Pawn pawn = selectedObjectsListForReading[i] as Pawn;
+                if (pawn != null && pawn.IsColonistPlayerControlled)
+                {
+                    if (pawn.GetComp<VEF_Comp_Pawn_RangedVerbs>().CurRangedVerb != null)
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        private static bool AtLeastTwoSelectedColonistsHaveDifferentRangedVerbs()
+        {
+            if (Find.Selector.NumSelected <= 1)
+            {
+                return false;
+            }
+            Verb verbDef = null;
+            bool flag = false;
+            List<object> selectedObjectsListForReading = Find.Selector.SelectedObjectsListForReading;
+            for (int i = 0; i < selectedObjectsListForReading.Count; i++)
+            {
+                Pawn pawn = selectedObjectsListForReading[i] as Pawn;
+                if (pawn != null && pawn.IsColonistPlayerControlled)
+                {
+                    Verb verbDef2;
+                    if (pawn.GetComp<VEF_Comp_Pawn_RangedVerbs>().CurRangedVerb == null)
+                    {
+                        verbDef2 = null;
+                    }
+                    else
+                    {
+                        verbDef2 = pawn.GetComp<VEF_Comp_Pawn_RangedVerbs>().CurRangedVerb;
+                    }
+                    if (!flag)
+                    {
+                        verbDef = verbDef2;
+                        flag = true;
+                    }
+                    else if (verbDef2 != verbDef)
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
 
         public Verb CurRangedVerb

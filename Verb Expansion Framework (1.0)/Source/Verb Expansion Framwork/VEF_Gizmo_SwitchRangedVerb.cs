@@ -10,17 +10,12 @@ using UnityEngine;
 namespace VerbExpansionFramework
 {
     [StaticConstructorOnStartup]
-    public class VEF_Gizmo_SwitchRangedVerb : Command
+    public class VEF_Gizmo_SwitchRangedVerb : Command_Target
     {
         public VEF_Gizmo_SwitchRangedVerb(Pawn pawn)
         {
             this.pawn = pawn;
             UpdateCurRangedVerb();
-
-            if (this.verb != null && this.verb.verbProps.hasStandardCommand == true)
-            {
-                this.hotKey = KeyBindingDefOf.Misc5;
-            }
         }
 
         public override bool Visible
@@ -46,7 +41,6 @@ namespace VerbExpansionFramework
 
         public override void GizmoUpdateOnMouseover()
         {
-            //UpdateCurRangedVerb();
             if (verb != null)
             {
                 verb.verbProps.DrawRadiusRing(this.pawn.Position);
@@ -88,26 +82,20 @@ namespace VerbExpansionFramework
             UpdateAllRangedVerbs();
             if (this.verb != null)
             {
-                Find.WindowStack.Add(MakeRangedVerbsMenu());
-                Targeter targeter = Find.Targeter;
-                if (targeter.targetingVerb != null && targeter.targetingVerb.verbProps == this.verb.verbProps)
+
+                if (allRangedVerbs.Count > 1 && GetSelectedPawns().Count == 1)
                 {
-                    Pawn casterPawn = this.verb.CasterPawn;
-                    if (!targeter.IsPawnTargeting(casterPawn))
-                    {
-                        targeter.targetingVerbAdditionalPawns.Add(casterPawn);
-                    }
+                    Find.WindowStack.Add(MakeRangedVerbsMenu());
                 }
-                else
+                Find.Targeter.BeginTargeting(targetingParams, delegate (LocalTargetInfo target)
                 {
-                    Find.Targeter.BeginTargeting(this.verb);
-                }
+                    this.action(target.Thing);
+                }, null, null, null);
             }
         }
 
         private FloatMenu MakeRangedVerbsMenu()
         {
-            //UpdateAllRangedVerbs();
             List<FloatMenuOption> floatOptionList = new List<FloatMenuOption>();
 
             foreach (VerbEntry verbEntry in allRangedVerbs)
@@ -189,9 +177,15 @@ namespace VerbExpansionFramework
             this.allRangedVerbs = this.pawn.GetComp<VEF_Comp_Pawn_RangedVerbs>().getRangedVerbs;
         }
 
-        public Action<Thing> action;
-
-        public TargetingParameters targetingParams;
+        private List<Pawn> GetSelectedPawns()
+        {
+            IEnumerable<Pawn> selectedPawnsIEnum = Find.Selector.SelectedObjects.Where(delegate (object x)
+            {
+                Pawn pawn3 = x as Pawn;
+                return pawn3 != null && pawn3.IsColonistPlayerControlled && pawn3.Drafted;
+            }).Cast<Pawn>();
+            return selectedPawnsIEnum.ToList();
+        }
 
         public Verb verb;
 

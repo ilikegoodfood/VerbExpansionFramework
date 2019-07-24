@@ -32,6 +32,8 @@ namespace VerbExpansionFramework
             harmony.Patch(original: AccessTools.Constructor(type: typeof(BattleLogEntry_RangedImpact), parameters: new Type[] { typeof(Thing), typeof(Thing), typeof(Thing), typeof(ThingDef), typeof(ThingDef), typeof(ThingDef) }), prefix: new HarmonyMethod(type: patchType, name: nameof(BattleLogEntry_WeaponDefGrammarPrefix)), postfix: null);
             harmony.Patch(original: AccessTools.Method(type: typeof(HediffSet), name: "CalculateBleedRate"), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(CalculateBleedRatePostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(JobDriver_Wait), name: "CheckForAutoAttack"), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(CheckForAutoAttackPostfix)));
+            harmony.Patch(original: AccessTools.Method(type: typeof(FloatMenuUtility), name: nameof(FloatMenuUtility.GetAttackAction)), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(FloatMenuUtility_GetAttackActionPostfix)));
+            harmony.Patch(original: AccessTools.Method(type: typeof(PawnAttackGizmoUtility), name: "ShouldUseSquadAttackGizmo"), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(PawnAttackGizmoUtility_ShouldUseSquadAttackGizmoPostfix)));
             harmony.Patch(original: MB_Pawn_DraftController_GetGizmo(), prefix: null, postfix: null, transpiler: new HarmonyMethod(type: patchType, name: nameof(Pawn_DraftController_GetGizmosTranspiler)));
             harmony.Patch(original: AccessTools.Method(type: typeof(AttackTargetsCache), name: nameof(AttackTargetsCache.GetPotentialTargetsFor)), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(GetPotentialTargetsForPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(Pawn), name: nameof(Pawn.TryGetAttackVerb)), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(TryGetAttackVerbPostfix)));
@@ -65,8 +67,8 @@ namespace VerbExpansionFramework
                 {
                     ThingDef tempThingDef = new ThingDef() { defName = "tempThingDef :: " + usedVerb.HediffCompSource.parent.def.label, label = usedVerb.HediffCompSource.parent.def.label, thingClass = typeof(ThingWithComps), category = ThingCategory.Item };
 
-                    object giveShortHashObject = MI_GiveShortHash.Invoke(null, new object[] { tempThingDef, tempThingDef.GetType() });
-                    var tempThingDefVerbs = Traverse.Create(tempThingDef).Field("verbs").SetValue(new List<VerbProperties>() { usedVerb.verbProps });
+                    MI_GiveShortHash.Invoke(null, new object[] { tempThingDef, tempThingDef.GetType() });
+                    Traverse.Create(tempThingDef).Field("verbs").SetValue(new List<VerbProperties>() { usedVerb.verbProps });
 
                     weaponDef = tempThingDef;
                 }
@@ -80,7 +82,8 @@ namespace VerbExpansionFramework
 
         private static void CalculateBleedRatePostfix(HediffSet __instance, ref float __result)
         {
-            __result *= StatExtension.GetStatValue(__instance.pawn, StatDef.Named("BleedRate"), true);
+            __result *= __instance.pawn.health.capacities.GetLevel(VEF_DefOf.BleedRate);
+            return;
         }
 
         private static void CheckForAutoAttackPostfix(JobDriver_Wait __instance)
@@ -109,6 +112,12 @@ namespace VerbExpansionFramework
             return;
         }
 
+        private static void FloatMenuUtility_GetAttackActionPostfix(Pawn pawn, LocalTargetInfo target, out string failStr, ref Action __result)
+        {
+            __result = VEF_FloatMenuUtility.GetRangedAttackAction(pawn, target, out failStr);
+            return;
+        }
+
         private static void GetPotentialTargetsForPostfix(IAttackTargetSearcher th, ref List<IAttackTarget> __result)
         {
             Thing thing = th.Thing;
@@ -124,6 +133,13 @@ namespace VerbExpansionFramework
                     }
                 }
             }
+            return;
+        }
+
+        private static void PawnAttackGizmoUtility_ShouldUseSquadAttackGizmoPostfix(ref bool __result)
+        {
+            __result = VEF_Comp_Pawn_RangedVerbs.ShouldUseSquadAttackGizmo();
+            return;
         }
 
         private static IEnumerable<CodeInstruction> Pawn_DraftController_GetGizmosTranspiler(IEnumerable<CodeInstruction> codeInstructions)
