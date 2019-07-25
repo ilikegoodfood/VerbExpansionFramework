@@ -27,16 +27,43 @@ namespace VerbExpansionFramework
             Log.Message("VEF :: Performing Hamrony Patches");
             HarmonyInstance.DEBUG = false;
             HarmonyInstance harmony = HarmonyInstance.Create(id: "com.framework.expansion.verb");
+            harmony.Patch(original: AccessTools.Method(type: typeof(AttackTargetsCache), name: nameof(AttackTargetsCache.GetPotentialTargetsFor)), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(AttackTargetsCache_GetPotentialTargetsForPostfix)));
             harmony.Patch(original: AccessTools.Constructor(type: typeof(BattleLogEntry_ExplosionImpact), parameters: new Type[] { typeof(Thing), typeof(Thing), typeof(ThingDef), typeof(ThingDef), typeof(DamageDef) }), prefix: new HarmonyMethod(type: patchType, name: nameof(BattleLogEntry_WeaponDefGrammarPrefix)), postfix: null);
             harmony.Patch(original: AccessTools.Constructor(type: typeof(BattleLogEntry_RangedFire), parameters: new Type[] { typeof(Thing), typeof(Thing), typeof(ThingDef), typeof(ThingDef), typeof(bool) }), prefix: new HarmonyMethod(type: patchType, name: nameof(BattleLogEntry_WeaponDefGrammarPrefix)), postfix: null);
             harmony.Patch(original: AccessTools.Constructor(type: typeof(BattleLogEntry_RangedImpact), parameters: new Type[] { typeof(Thing), typeof(Thing), typeof(Thing), typeof(ThingDef), typeof(ThingDef), typeof(ThingDef) }), prefix: new HarmonyMethod(type: patchType, name: nameof(BattleLogEntry_WeaponDefGrammarPrefix)), postfix: null);
-            harmony.Patch(original: AccessTools.Method(type: typeof(JobDriver_Wait), name: "CheckForAutoAttack"), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(CheckForAutoAttackPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(FloatMenuUtility), name: nameof(FloatMenuUtility.GetAttackAction)), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(FloatMenuUtility_GetAttackActionPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(HediffSet), name: "CalculateBleedRate"), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(HediffSet_CalculateBleedRatePostfix)));
+            harmony.Patch(original: AccessTools.Method(type: typeof(JobDriver_Wait), name: "CheckForAutoAttack"), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(JobDriver_Wait_CheckForAutoAttackPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnAttackGizmoUtility), name: "ShouldUseSquadAttackGizmo"), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(PawnAttackGizmoUtility_ShouldUseSquadAttackGizmoPostfix)));
             harmony.Patch(original: MB_Pawn_DraftController_GetGizmo(), prefix: null, postfix: null, transpiler: new HarmonyMethod(type: patchType, name: nameof(Pawn_DraftController_GetGizmosTranspiler)));
-            harmony.Patch(original: AccessTools.Method(type: typeof(AttackTargetsCache), name: nameof(AttackTargetsCache.GetPotentialTargetsFor)), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(GetPotentialTargetsForPostfix)));
-            harmony.Patch(original: AccessTools.Method(type: typeof(Pawn), name: nameof(Pawn.TryGetAttackVerb)), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(TryGetAttackVerbPostfix)));
+            harmony.Patch(original: AccessTools.Method(type: typeof(Pawn), name: nameof(Pawn.TryGetAttackVerb)), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(Pawn_TryGetAttackVerbPostfix)));
+        }
+
+        private static void AttackTargetsCache_GetPotentialTargetsForPostfix(IAttackTargetSearcher th, ref List<IAttackTarget> __result)
+        {
+            Thing thing = th.Thing;
+            Pawn pawn = thing as Pawn;
+
+            if (pawn != null && pawn.InAggroMentalState)
+            {
+                foreach (Pawn pawn2 in pawn.Map.mapPawns.AllPawnsSpawned)
+                {
+                    if (pawn2.RaceProps.ToolUser)
+                    {
+                        __result.Add(pawn2);
+                    }
+                }
+            }
+            // Logs the number of cached targets to console. Uncomment for testing.
+            /*if (__result == null)
+            {
+                Log.Message("target cahce is null");
+            }
+            else
+            {
+                Log.Message(__result.Count + " targets cached");
+            }*/
+            return;
         }
 
         private static void BattleLogEntry_WeaponDefGrammarPrefix(Thing initiator, ref ThingDef weaponDef)
@@ -63,6 +90,11 @@ namespace VerbExpansionFramework
                 {
                     return;
                 }
+                else if (usedVerb.DirectOwner as VEF_Comp_ThingVerbGiver != null)
+                {
+                    VEF_Comp_ThingVerbGiver compSource = usedVerb.DirectOwner as VEF_Comp_ThingVerbGiver;
+                    weaponDef = compSource.parent.def;
+                }
                 else if (usedVerb.HediffCompSource != null)
                 {
                     ThingDef tempThingDef = new ThingDef() { defName = "tempThingDef :: " + usedVerb.HediffCompSource.parent.def.label, label = usedVerb.HediffCompSource.parent.def.label, thingClass = typeof(ThingWithComps), category = ThingCategory.Item };
@@ -80,59 +112,43 @@ namespace VerbExpansionFramework
             return;
         }
 
-        private static void CheckForAutoAttackPostfix(JobDriver_Wait __instance)
-        {
-            if (__instance.pawn.Downed || __instance.pawn.stances.FullBodyBusy || __instance.pawn.story != null)
-            {
-                return;
-            }
-
-            Verb currentEffectiveVerb = __instance.pawn.CurrentEffectiveVerb;
-            if (currentEffectiveVerb != null && !currentEffectiveVerb.verbProps.IsMeleeAttack)
-            {
-                TargetScanFlags targetScanFlags = TargetScanFlags.NeedLOSToPawns | TargetScanFlags.NeedLOSToNonPawns | TargetScanFlags.NeedThreat;
-                if (currentEffectiveVerb.IsIncendiary())
-                {
-                    targetScanFlags |= TargetScanFlags.NeedNonBurning;
-                }
-                Thing thing = (Thing)AttackTargetFinder.BestShootTargetFromCurrentPosition(__instance.pawn, targetScanFlags, null, 0f, 9999f);
-                if (thing != null)
-                {
-                    __instance.pawn.TryStartAttack(thing);
-                    __instance.collideWithPawns = true;
-                    return;
-                }
-            }
-            return;
-        }
-
         private static void FloatMenuUtility_GetAttackActionPostfix(Pawn pawn, LocalTargetInfo target, out string failStr, ref Action __result)
         {
             __result = VEF_FloatMenuUtility.GetRangedAttackAction(pawn, target, out failStr);
             return;
         }
 
-        private static void GetPotentialTargetsForPostfix(IAttackTargetSearcher th, ref List<IAttackTarget> __result)
-        {
-            Thing thing = th.Thing;
-            Pawn pawn = thing as Pawn;
-
-            if (pawn != null && pawn.InAggroMentalState)
-            {
-                foreach (Pawn pawn2 in pawn.Map.mapPawns.AllPawnsSpawned)
-                {
-                    if (pawn2.RaceProps.ToolUser)
-                    {
-                        __result.Add(pawn2);
-                    }
-                }
-            }
-            return;
-        }
-
         private static void HediffSet_CalculateBleedRatePostfix(HediffSet __instance, ref float __result)
         {
             __result *= __instance.pawn.health.capacities.GetLevel(VEF_DefOf.BleedRate);
+            return;
+        }
+
+        private static void JobDriver_Wait_CheckForAutoAttackPostfix(JobDriver_Wait __instance)
+        {
+            if (__instance.pawn.Downed || __instance.pawn.stances.FullBodyBusy || __instance.pawn.story != null)
+            {
+                return;
+            }
+            if (((__instance.pawn.story != null && !__instance.pawn.story.WorkTagIsDisabled(WorkTags.Violent)) || __instance.pawn.story == null) && __instance.job.def == JobDefOf.Wait_Combat && (__instance.pawn.drafter == null || __instance.pawn.drafter.FireAtWill))
+            {
+                Verb currentEffectiveVerb = __instance.pawn.CurrentEffectiveVerb;
+                if (currentEffectiveVerb != null && !currentEffectiveVerb.verbProps.IsMeleeAttack)
+                {
+                    TargetScanFlags targetScanFlags = TargetScanFlags.NeedLOSToPawns | TargetScanFlags.NeedLOSToNonPawns | TargetScanFlags.NeedThreat;
+                    if (currentEffectiveVerb.IsIncendiary())
+                    {
+                        targetScanFlags |= TargetScanFlags.NeedNonBurning;
+                    }
+                    Thing thing = (Thing)AttackTargetFinder.BestShootTargetFromCurrentPosition(__instance.pawn, targetScanFlags, null, 0f, 9999f);
+                    if (thing != null)
+                    {
+                        __instance.pawn.TryStartAttack(thing);
+                        __instance.collideWithPawns = true;
+                        return;
+                    }
+                }
+            }
             return;
         }
 
@@ -199,7 +215,7 @@ namespace VerbExpansionFramework
         }
 
         [HarmonyPriority(1200)]
-        private static void TryGetAttackVerbPostfix(Pawn __instance, ref Verb __result, ref Thing target, bool allowManualCastWeapons)
+        private static void Pawn_TryGetAttackVerbPostfix(Pawn __instance, ref Verb __result, ref Thing target)
         {
             Verb tempVerb = __instance.GetComp<VEF_Comp_Pawn_RangedVerbs>().TryGetRangedVerb(target);
             if (tempVerb != null)

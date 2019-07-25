@@ -76,7 +76,7 @@ namespace VerbExpansionFramework
                 {
                     this.visible = false;
                 }
-                else if (curRangedVerb == null || (rangedVerbs.Count == 1 && curRangedVerb.EquipmentCompSource != null && curRangedVerb.verbProps.isPrimary))
+                else if (curRangedVerb == null || (rangedVerbs.Count == 1 && curRangedVerb.EquipmentCompSource != null && curRangedVerb.verbProps.isPrimary) || Pawn.story.WorkTagIsDisabled(WorkTags.Violent))
                 {
                     this.visible = false;
                 }
@@ -230,10 +230,10 @@ namespace VerbExpansionFramework
                 for (int l = 0; l < wornApparel.Count; l++)
                 {
                     Apparel apparel = wornApparel[l];
-                    CompEquippable apparelComp = apparel.GetComp<CompEquippable>();
+                    VEF_Comp_ThingVerbGiver apparelComp = apparel.GetComp<VEF_Comp_ThingVerbGiver>();
                     if (apparelComp != null)
                     {
-                        List<Verb> allApparelVerbs = apparelComp.AllVerbs;
+                        List<Verb> allApparelVerbs = apparelComp.verbTracker.AllVerbs;
                         if (!allApparelVerbs.NullOrEmpty())
                         {
                             for (int m = 0; m < allApparelVerbs.Count; m++)
