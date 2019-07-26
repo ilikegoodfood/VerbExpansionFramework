@@ -52,9 +52,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="VEF_Comp_HealthModifiers.cs" />
+    <Compile Include="Damage Workers\VEF_DamageWiorker_FlameNoShake.cs" />
+    <Compile Include="Damage Workers\VEF_DamageWorker_BombNoShake.cs" />
+    <Compile Include="Damage Workers\VEF_DamageWorker_ExtinguishNoShake.cs" />
     <Compile Include="VEF_Comp_Pawn_RangedVerbs.cs" />
-    <Compile Include="VEF_Comp_ThingVerbGiver.cs" />
     <Compile Include="VEF_DefOf.cs" />
     <Compile Include="VEF_FloatMenuUtility.cs" />
     <Compile Include="VEF_Gizmo_SwitchRangedVerb.cs" />

@@ -6,6 +6,7 @@
 		<defName>BleedRate</defName>
 		<label>bleed rate</label>
 		<listOrder>9</listOrder>
+		<minValue>0.1</minValue>
 		<showOnHumanlikes>false</showOnHumanlikes>
 		<showOnAnimals>false</showOnAnimals>
 		<showOnMechanoids>false</showOnMechanoids>

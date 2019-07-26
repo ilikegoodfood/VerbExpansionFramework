@@ -224,29 +224,6 @@ namespace VerbExpansionFramework
                     }
                 }
             }
-            if (this.Pawn.apparel != null)
-            {
-                List<Apparel> wornApparel = this.Pawn.apparel.WornApparel;
-                for (int l = 0; l < wornApparel.Count; l++)
-                {
-                    Apparel apparel = wornApparel[l];
-                    VEF_Comp_ThingVerbGiver apparelComp = apparel.GetComp<VEF_Comp_ThingVerbGiver>();
-                    if (apparelComp != null)
-                    {
-                        List<Verb> allApparelVerbs = apparelComp.verbTracker.AllVerbs;
-                        if (!allApparelVerbs.NullOrEmpty())
-                        {
-                            for (int m = 0; m < allApparelVerbs.Count; m++)
-                            {
-                                if (!allApparelVerbs[m].IsMeleeAttack && allApparelVerbs[m].IsStillUsableBy(this.Pawn))
-                                {
-                                    this.rangedVerbs.Add(new VerbEntry(allApparelVerbs[m], this.Pawn));
-                                }
-                            }
-                        }
-                    }
-                }
-            }
             foreach (Verb verb in this.Pawn.health.hediffSet.GetHediffsVerbs())
             {
                 if (!verb.IsMeleeAttack && verb.IsStillUsableBy(this.Pawn))

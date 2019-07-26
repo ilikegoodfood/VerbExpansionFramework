@@ -90,11 +90,6 @@ namespace VerbExpansionFramework
                 {
                     return;
                 }
-                else if (usedVerb.DirectOwner as VEF_Comp_ThingVerbGiver != null)
-                {
-                    VEF_Comp_ThingVerbGiver compSource = usedVerb.DirectOwner as VEF_Comp_ThingVerbGiver;
-                    weaponDef = compSource.parent.def;
-                }
                 else if (usedVerb.HediffCompSource != null)
                 {
                     ThingDef tempThingDef = new ThingDef() { defName = "tempThingDef :: " + usedVerb.HediffCompSource.parent.def.label, label = usedVerb.HediffCompSource.parent.def.label, thingClass = typeof(ThingWithComps), category = ThingCategory.Item };

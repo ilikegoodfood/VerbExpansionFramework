@@ -113,11 +113,6 @@ namespace VerbExpansionFramework
                 {
                     verbLabel = verbEntry.verb.EquipmentCompSource.parent.Label;
                 }
-                else if (verbEntry.verb.DirectOwner as VEF_Comp_ThingVerbGiver != null)
-                {
-                    VEF_Comp_ThingVerbGiver compSource = verb.DirectOwner as VEF_Comp_ThingVerbGiver;
-                    verbLabel = compSource.parent.def.label;
-                }
                 else if (verbEntry.verb.HediffCompSource != null)
                 {
                     verbLabel = verbEntry.verb.HediffCompSource.Def.label;
@@ -153,15 +148,6 @@ namespace VerbExpansionFramework
                         this.icon = tempIcon;
                     }
                 }
-                else if (this.verb.DirectOwner as VEF_Comp_ThingVerbGiver != null)
-                {
-                    VEF_Comp_ThingVerbGiver compSource = verb.DirectOwner as VEF_Comp_ThingVerbGiver;
-                    tempIcon = compSource.parent.def.uiIcon;
-                    if (tempIcon != BaseContent.BadTex || tempIcon != null)
-                    {
-                        this.icon = tempIcon;
-                    }
-                }
                 else if (this.verb.verbProps.LaunchesProjectile)
                 {
                     tempIcon = this.verb.GetProjectile().uiIcon;
@@ -174,11 +160,6 @@ namespace VerbExpansionFramework
                 if (this.verb.EquipmentCompSource != null)
                 {
                     this.defaultDesc = this.verb.EquipmentCompSource.parent.Label + ": " + this.verb.EquipmentCompSource.parent.DescriptionDetailed;
-                }
-                else if (this.verb.DirectOwner as VEF_Comp_ThingVerbGiver != null)
-                {
-                    VEF_Comp_ThingVerbGiver compSource = verb.DirectOwner as VEF_Comp_ThingVerbGiver;
-                    this.defaultDesc = compSource.parent.Label + ": " + compSource.parent.def.description;
                 }
                 else if (this.verb.HediffCompSource != null)
                 {
