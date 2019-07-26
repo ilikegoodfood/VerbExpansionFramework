@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Defs>
 
-  <ThingDef ParentName="ApparelBase">
+  <!--<ThingDef ParentName="ApparelBase">
     <defName>VEF_GunBelt</defName>
 		<label>test gun belt</label>
     <description>A thick leather belt complete with attached holster and revolver. It would have been a great idea, if the revolver wasn't fixed to the belt.</description>
@@ -88,6 +88,6 @@
         </li>
       </options>
     </colorGenerator>
-  </ThingDef>
+  </ThingDef>-->
 
 </Defs>
