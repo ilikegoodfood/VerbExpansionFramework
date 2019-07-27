@@ -6,7 +6,6 @@
 		<defName>TestBodyMountedCannon</defName>
 		<label>test body mounted cannon</label>
 		<labelNoun>a body mounted cannon</labelNoun>
-		<!--<spawnThingOnRemoved>ArchotechArm</spawnThingOnRemoved>-->
 		<comps>
 		    <li Class="HediffCompProperties_VerbGiver">
 				<verbs>
