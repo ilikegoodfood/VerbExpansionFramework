@@ -130,46 +130,7 @@ namespace VerbExpansionFramework
 
         private void UpdateCurRangedVerb()
         {
-            this.verb = this.pawn.GetComp<VEF_Comp_Pawn_RangedVerbs>().CurRangedVerb;
-
-            Texture2D tempIcon = BaseContent.BadTex;
-            this.icon = tempIcon;
-            if (this.verb != null)
-            {
-                if (!verb.IsStillUsableBy(this.pawn))
-                {
-                    this.pawn.GetComp<VEF_Comp_Pawn_RangedVerbs>().TryGetRangedVerb(null);
-                }
-                if (this.verb.EquipmentCompSource != null)
-                {
-                    tempIcon = this.verb.EquipmentCompSource.parent.def.uiIcon;
-                    if (tempIcon != BaseContent.BadTex || tempIcon != null)
-                    {
-                        this.icon = tempIcon;
-                    }
-                }
-                else if (this.verb.verbProps.LaunchesProjectile)
-                {
-                    tempIcon = this.verb.GetProjectile().uiIcon;
-                    if (tempIcon != BaseContent.BadTex || tempIcon != null)
-                    {
-                        this.icon = tempIcon;
-                    }
-                }
-
-                if (this.verb.EquipmentCompSource != null)
-                {
-                    this.defaultDesc = this.verb.EquipmentCompSource.parent.Label + ": " + this.verb.EquipmentCompSource.parent.DescriptionDetailed;
-                }
-                else if (this.verb.HediffCompSource != null)
-                {
-                    this.defaultDesc = this.verb.HediffCompSource.Def.label + ": " + this.verb.HediffCompSource.Def.description;
-                }
-                else
-                {
-                    this.defaultDesc = "Race-Defined weapon of: " + this.pawn.def.label + ": " + this.pawn.def.description;
-                }
-            }
+            this.verb = this.pawn.GetComp<VEF_Comp_Pawn_RangedVerbs>().TryGetRangedVerb(null);
         }
 
         private void UpdateAllRangedVerbs()

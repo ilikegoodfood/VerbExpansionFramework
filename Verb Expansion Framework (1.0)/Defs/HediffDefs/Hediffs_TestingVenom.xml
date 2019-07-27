@@ -2,7 +2,7 @@
 
 <Defs>
 
-	<!--<HediffDef>
+	<HediffDef>
 		<defName>VEF_AnticoagulantVenom</defName>
 		<hediffClass>HediffWithComps</hediffClass>
 		<defaultLabelColor>(1, 0.2, 0.2)</defaultLabelColor>
@@ -70,6 +70,6 @@
 				</capMods>
 			</li>
 		</stages>
-	</HediffDef>-->
+	</HediffDef>
   
  </Defs>

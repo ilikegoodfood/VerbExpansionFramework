@@ -2,7 +2,7 @@
 
 <Defs>
 
-	<!--<HediffDef ParentName="AddedBodyPartBase">
+	<HediffDef ParentName="AddedBodyPartBase">
 		<defName>TestBodyMountedCannon</defName>
 		<label>test body mounted cannon</label>
 		<labelNoun>a body mounted cannon</labelNoun>
@@ -32,6 +32,7 @@
 			<partEfficiency>1</partEfficiency>
 			<betterThanNatural>true</betterThanNatural>
 		</addedPartProps>
-    </HediffDef>-->
+		<spawnThingOnRemoved>TestBodyMountedCannon</spawnThingOnRemoved>
+    </HediffDef>
 
 </Defs>

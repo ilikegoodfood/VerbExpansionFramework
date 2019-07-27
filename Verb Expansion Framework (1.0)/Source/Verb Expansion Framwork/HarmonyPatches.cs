@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using Harmony;
 using RimWorld;
+using RimWorld.Planet;
 using Verse;
 using Verse.AI;
 using UnityEngine;
@@ -27,16 +28,71 @@ namespace VerbExpansionFramework
             Log.Message("VEF :: Performing Hamrony Patches");
             HarmonyInstance.DEBUG = false;
             HarmonyInstance harmony = HarmonyInstance.Create(id: "com.framework.expansion.verb");
+            harmony.Patch(original: AccessTools.Method(type: typeof(Alert_BrawlerHasRangedWeapon), name: nameof(Alert_BrawlerHasRangedWeapon.GetReport)), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(Alert_BrawlerHasRangedWeapon_GetReportPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(AttackTargetsCache), name: nameof(AttackTargetsCache.GetPotentialTargetsFor)), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(AttackTargetsCache_GetPotentialTargetsForPostfix)));
             harmony.Patch(original: AccessTools.Constructor(type: typeof(BattleLogEntry_ExplosionImpact), parameters: new Type[] { typeof(Thing), typeof(Thing), typeof(ThingDef), typeof(ThingDef), typeof(DamageDef) }), prefix: new HarmonyMethod(type: patchType, name: nameof(BattleLogEntry_WeaponDefGrammarPrefix)), postfix: null);
             harmony.Patch(original: AccessTools.Constructor(type: typeof(BattleLogEntry_RangedFire), parameters: new Type[] { typeof(Thing), typeof(Thing), typeof(ThingDef), typeof(ThingDef), typeof(bool) }), prefix: new HarmonyMethod(type: patchType, name: nameof(BattleLogEntry_WeaponDefGrammarPrefix)), postfix: null);
             harmony.Patch(original: AccessTools.Constructor(type: typeof(BattleLogEntry_RangedImpact), parameters: new Type[] { typeof(Thing), typeof(Thing), typeof(Thing), typeof(ThingDef), typeof(ThingDef), typeof(ThingDef) }), prefix: new HarmonyMethod(type: patchType, name: nameof(BattleLogEntry_WeaponDefGrammarPrefix)), postfix: null);
+            harmony.Patch(original: AccessTools.Method(type: typeof(Command_VerbTarget), name: nameof(Command_VerbTarget.ProcessInput)), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(Command_VerbTarget_ProcessInputPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(FloatMenuUtility), name: nameof(FloatMenuUtility.GetAttackAction)), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(FloatMenuUtility_GetAttackActionPostfix)));
+            harmony.Patch(original: AccessTools.Method(type: typeof(HealthCardUtility), name: "GenerateSurgeryOption"), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(HealthCardUtility_GenerateSurgeryOptionPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(HediffSet), name: "CalculateBleedRate"), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(HediffSet_CalculateBleedRatePostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(JobDriver_Wait), name: "CheckForAutoAttack"), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(JobDriver_Wait_CheckForAutoAttackPostfix)));
-            harmony.Patch(original: AccessTools.Method(type: typeof(PawnAttackGizmoUtility), name: "ShouldUseSquadAttackGizmo"), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(PawnAttackGizmoUtility_ShouldUseSquadAttackGizmoPostfix)));
+            harmony.Patch(original: AccessTools.Method(type: typeof(PawnAttackGizmoUtility), name: "GetSquadAttackGizmo"), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(PawnAttackGizmoUtility_GetSquadAttackGizmo)));
             harmony.Patch(original: MB_Pawn_DraftController_GetGizmo(), prefix: null, postfix: null, transpiler: new HarmonyMethod(type: patchType, name: nameof(Pawn_DraftController_GetGizmosTranspiler)));
             harmony.Patch(original: AccessTools.Method(type: typeof(Pawn), name: nameof(Pawn.TryGetAttackVerb)), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(Pawn_TryGetAttackVerbPostfix)));
+            harmony.Patch(original: AccessTools.Method(type: typeof(ThoughtWorker_IsCarryingRangedWeapon), name: "CurrentStateInternal"), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(ThoughtWorker_IsCarryingRangedWeapon_CurrentStateInternalPostfix)));
+        }
+
+        private static void Alert_BrawlerHasRangedWeapon_GetReportPostfix(ref AlertReport __result)
+        {
+            Log.Message("Postfixing");
+            IEnumerable<Pawn> brawlersWithRangedWeapon = BrawlersWithRangedWeapon(__result);
+            IEnumerable<Pawn> brawlersWithRangedHediff = BrawlersWithRangedHediff();
+            
+            if (brawlersWithRangedWeapon == null)
+            {
+                __result = AlertReport.CulpritsAre(brawlersWithRangedHediff);
+            }
+            else if (brawlersWithRangedHediff == null)
+            {
+                __result = AlertReport.CulpritsAre(brawlersWithRangedWeapon);
+            }
+            else
+            {
+                __result = AlertReport.CulpritsAre(brawlersWithRangedWeapon.Concat(brawlersWithRangedHediff));
+            }
+            return;
+        }
+
+        private static IEnumerable<Pawn> BrawlersWithRangedHediff()
+        {
+            foreach (Pawn pawn in PawnsFinder.AllMaps_FreeColonistsSpawned)
+            {
+                if (pawn.story.traits.HasTrait(TraitDefOf.Brawler) && !(pawn.equipment.Primary != null && pawn.equipment.Primary.def.IsRangedWeapon) && pawn.health.hediffSet.GetHediffsVerbs() != null)
+                {
+                    foreach (Verb verb in pawn.health.hediffSet.GetHediffsVerbs())
+                    {
+                        if (!verb.IsMeleeAttack)
+                        {
+                            yield return pawn;
+                        }
+                    }
+                }
+            }
+        }
+
+        private static IEnumerable<Pawn> BrawlersWithRangedWeapon(AlertReport report)
+        {
+            IEnumerable<GlobalTargetInfo> resultTargInfo = report.culprits;
+
+            if (resultTargInfo != null)
+            {
+                foreach (GlobalTargetInfo targInfo in resultTargInfo)
+                {
+                    yield return (Pawn)targInfo.Thing;
+                }
+            }
         }
 
         private static void AttackTargetsCache_GetPotentialTargetsForPostfix(IAttackTargetSearcher th, ref List<IAttackTarget> __result)
@@ -54,15 +110,6 @@ namespace VerbExpansionFramework
                     }
                 }
             }
-            // Logs the number of cached targets to console. Uncomment for testing.
-            /*if (__result == null)
-            {
-                Log.Message("target cahce is null");
-            }
-            else
-            {
-                Log.Message(__result.Count + " targets cached");
-            }*/
             return;
         }
 
@@ -107,9 +154,41 @@ namespace VerbExpansionFramework
             return;
         }
 
+        private static void Command_VerbTarget_ProcessInputPostfix(Command_VerbTarget __instance)
+        {
+            __instance.verb.CasterPawn.GetComp<VEF_Comp_Pawn_RangedVerbs>().SetCurRangedVerb(__instance.verb, null);
+            return;
+        }
+
         private static void FloatMenuUtility_GetAttackActionPostfix(Pawn pawn, LocalTargetInfo target, out string failStr, ref Action __result)
         {
             __result = VEF_FloatMenuUtility.GetRangedAttackAction(pawn, target, out failStr);
+            return;
+        }
+
+        private static void HealthCardUtility_GenerateSurgeryOptionPostfix(Thing thingForMedBills, RecipeDef recipe, ref FloatMenuOption __result)
+        {
+            Pawn pawn = (Pawn)thingForMedBills;
+            if (pawn == null || pawn.story == null || !pawn.story.traits.HasTrait(TraitDefOf.Brawler))
+            {
+                return;
+            }
+            else if (recipe.addsHediff != null && recipe.addsHediff.HasComp(typeof(HediffComp_VerbGiver)))
+            {
+                bool flag = false;
+                foreach (VerbProperties verb in recipe.addsHediff.CompProps<HediffCompProperties_VerbGiver>().verbs)
+                {
+                    if (!verb.IsMeleeAttack)
+                    {
+                        flag = true;
+                        break;
+                    }
+                }
+                if (flag)
+                {
+                    __result.Label = __result.Label + " " + "EquipWarningBrawler".Translate();
+                }
+            }
             return;
         }
 
@@ -147,9 +226,35 @@ namespace VerbExpansionFramework
             return;
         }
 
-        private static void PawnAttackGizmoUtility_ShouldUseSquadAttackGizmoPostfix(ref bool __result)
+        private static void PawnAttackGizmoUtility_GetSquadAttackGizmo(ref Gizmo __result)
         {
-            __result = VEF_Comp_Pawn_RangedVerbs.ShouldUseSquadAttackGizmo();
+            Command_Target command_Target = (Command_Target)__result;
+            if (VEF_Comp_Pawn_RangedVerbs.ShouldUseSquadAttackGizmo())
+            {
+                command_Target.defaultLabel = "CommandSquadEquipmentAttack".Translate();
+                command_Target.defaultDesc = "CommandSquadEquipmentAttackDesc".Translate();
+                command_Target.action = delegate (Thing target)
+                {
+                    IEnumerable<Pawn> pawns = Find.Selector.SelectedObjects.Where(delegate (object x)
+                    {
+                        Pawn pawn3 = x as Pawn;
+                        return pawn3 != null && pawn3.IsColonistPlayerControlled && pawn3.Drafted;
+                    }).Cast<Pawn>();
+                    foreach (Pawn pawn2 in pawns)
+                    {
+                        if (pawn2.equipment.Primary != null)
+                        {
+                            pawn2.GetComp<VEF_Comp_Pawn_RangedVerbs>().SetCurRangedVerb(pawn2.equipment.PrimaryEq.PrimaryVerb, null);
+                        }
+                        string text;
+                        Action attackAction = FloatMenuUtility.GetAttackAction(pawn2, target, out text);
+                        if (attackAction != null)
+                        {
+                            attackAction();
+                        }
+                    }
+                };
+            }
             return;
         }
 
@@ -216,6 +321,24 @@ namespace VerbExpansionFramework
             if (tempVerb != null)
             {
                 __result = tempVerb;
+            }
+            return;
+        }
+
+        private static void ThoughtWorker_IsCarryingRangedWeapon_CurrentStateInternalPostfix(ref ThoughtState __result, Pawn p)
+        {
+            FieldInfo FI_stageInex = AccessTools.Field(type: typeof(ThoughtState), name: "stageIndex");
+
+            if (!__result.Active)
+            {
+                foreach (Verb verb in p.health.hediffSet.GetHediffsVerbs())
+                {
+                    if (!verb.IsMeleeAttack)
+                    {
+                        __result = true;
+                        break;
+                    }
+                }
             }
             return;
         }
