@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <Defs>
 
-	<RecipeDef ParentName="SurgeryFlesh">
+	<!--<RecipeDef ParentName="SurgeryFlesh">
 		<defName>InstallTestBodyMountedCannon</defName>
 		<label>install test body mounted cannon</label>
 		<description>Install a test body mounted cannon.</description>
@@ -44,6 +44,6 @@
 		<recipeUsers>
 			<li>Human</li>
         </recipeUsers>
-    </RecipeDef>
+    </RecipeDef>-->
 
 </Defs>
