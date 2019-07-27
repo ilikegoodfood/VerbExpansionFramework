@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <Defs>
 
-	<ThingDef ParentName="BodyPartProstheticBase">
+	<!--<ThingDef ParentName="BodyPartProstheticBase">
 		<defName>TestBodyMountedCannon</defName>
 		<label>test body mounted cannon</label>
 		<description>An experimental prosthetic arm with an integrated firearm.</description>
@@ -20,6 +20,6 @@
 		<techHediffsTags>
 		  <li>AdvancedWeapon</li>
 		</techHediffsTags>
-	</ThingDef>
+	</ThingDef>-->
   
  </Defs>
