@@ -255,6 +255,7 @@ namespace VerbExpansionFramework
                     }
                 };
             }
+            __result = command_Target;
             return;
         }
 
