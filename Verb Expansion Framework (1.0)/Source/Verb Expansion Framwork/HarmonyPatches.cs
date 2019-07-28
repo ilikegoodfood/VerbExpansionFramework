@@ -162,7 +162,7 @@ namespace VerbExpansionFramework
 
         private static void FloatMenuUtility_GetAttackActionPostfix(Pawn pawn, LocalTargetInfo target, out string failStr, ref Action __result)
         {
-            __result = VEF_FloatMenuUtility.GetRangedAttackAction(pawn, target, out failStr);
+            __result = VEF_FloatMenuUtility.GetAttackAction(pawn, target, out failStr);
             return;
         }
 
@@ -226,13 +226,18 @@ namespace VerbExpansionFramework
             return;
         }
 
-        private static void PawnAttackGizmoUtility_GetSquadAttackGizmo(ref Gizmo __result)
+        private static void PawnAttackGizmoUtility_GetSquadAttackGizmo(Pawn pawn, ref Gizmo __result)
         {
             Command_Target command_Target = (Command_Target)__result;
             if (VEF_Comp_Pawn_RangedVerbs.ShouldUseSquadAttackGizmo())
             {
                 command_Target.defaultLabel = "CommandSquadEquipmentAttack".Translate();
                 command_Target.defaultDesc = "CommandSquadEquipmentAttackDesc".Translate();
+                string str;
+                if (FloatMenuUtility.GetAttackAction(pawn, LocalTargetInfo.Invalid, out str) == null)
+                {
+                    command_Target.Disable(str.CapitalizeFirst() + ".");
+                }
                 command_Target.action = delegate (Thing target)
                 {
                     IEnumerable<Pawn> pawns = Find.Selector.SelectedObjects.Where(delegate (object x)
@@ -247,15 +252,11 @@ namespace VerbExpansionFramework
                             pawn2.GetComp<VEF_Comp_Pawn_RangedVerbs>().SetCurRangedVerb(pawn2.equipment.PrimaryEq.PrimaryVerb, null);
                         }
                         string text;
-                        Action attackAction = FloatMenuUtility.GetAttackAction(pawn2, target, out text);
-                        if (attackAction != null)
-                        {
-                            attackAction();
-                        }
+                        FloatMenuUtility.GetAttackAction(pawn2, target, out text)?.Invoke();
                     }
                 };
+                __result = command_Target;
             }
-            __result = command_Target;
             return;
         }
 
