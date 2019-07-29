@@ -140,7 +140,7 @@ namespace VerbExpansionFramework
                 }
                 else if (usedVerb.HediffCompSource != null)
                 {
-                    ThingDef tempThingDef = new ThingDef() { defName = "tempThingDef :: " + usedVerb.HediffCompSource.parent.def.label, label = usedVerb.HediffCompSource.parent.def.label, thingClass = typeof(ThingWithComps), category = ThingCategory.Item };
+                    ThingDef tempThingDef = new ThingDef() { defName = "tempThingDef :: " + usedVerb.HediffCompSource.parent.def.label, label = (usedVerb.verbProps.label.NullOrEmpty()) ? usedVerb.HediffCompSource.parent.def.label : usedVerb.verbProps.label, thingClass = typeof(ThingWithComps), category = ThingCategory.Item };
 
                     MI_GiveShortHash.Invoke(null, new object[] { tempThingDef, tempThingDef.GetType() });
                     Traverse.Create(tempThingDef).Field("verbs").SetValue(new List<VerbProperties>() { usedVerb.verbProps });
@@ -149,7 +149,20 @@ namespace VerbExpansionFramework
                 }
                 else
                 {
-                    weaponDef = pawn.def;
+                    if (usedVerb.verbProps.label.NullOrEmpty())
+                    {
+                        weaponDef = pawn.def;
+                    }
+                    else
+                    {
+                        ThingDef tempThingDef = new ThingDef() { defName = "tempThingDef :: " + pawn.Label, label = usedVerb.verbProps.label, thingClass = typeof(ThingWithComps), category = ThingCategory.Item };
+
+                        MI_GiveShortHash.Invoke(null, new object[] { tempThingDef, tempThingDef.GetType() });
+                        Traverse.Create(tempThingDef).Field("verbs").SetValue(new List<VerbProperties>() { usedVerb.verbProps });
+
+                        weaponDef = tempThingDef;
+                    }
+                    
                 }
             }
             return;

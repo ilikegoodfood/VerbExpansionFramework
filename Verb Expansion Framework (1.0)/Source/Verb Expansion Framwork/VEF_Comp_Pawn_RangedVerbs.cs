@@ -111,9 +111,10 @@ namespace VerbExpansionFramework
                 else if (CurRangedVerb != null)
                 {
                     Texture2D tempIcon = BaseContent.BadTex;
+                    string verbLabel = (CurRangedVerb.verbProps.label.NullOrEmpty()) ? String.Empty : CurRangedVerb.verbProps.label;
                     if (CurRangedVerb.EquipmentCompSource != null)
                     {
-                        rangedVerbGizmo.defaultDesc = CurRangedVerb.EquipmentCompSource.parent.Label + ": " + CurRangedVerb.EquipmentCompSource.parent.DescriptionDetailed;
+                        rangedVerbGizmo.defaultDesc = (verbLabel.NullOrEmpty()) ? CurRangedVerb.EquipmentCompSource.parent.Label + ": " + CurRangedVerb.EquipmentCompSource.parent.DescriptionDetailed : verbLabel + " :: " + CurRangedVerb.EquipmentCompSource.parent.Label + ": " + CurRangedVerb.EquipmentCompSource.parent.DescriptionDetailed;
                         tempIcon = CurRangedVerb.EquipmentCompSource.parent.def.uiIcon;
                         if (tempIcon != BaseContent.BadTex || tempIcon != null)
                         {
@@ -124,11 +125,11 @@ namespace VerbExpansionFramework
                     {
                         if (CurRangedVerb.HediffCompSource != null)
                         {
-                            rangedVerbGizmo.defaultDesc = CurRangedVerb.HediffCompSource.Def.label + ": " + CurRangedVerb.HediffCompSource.Def.description;
+                            rangedVerbGizmo.defaultDesc = (verbLabel.NullOrEmpty()) ? CurRangedVerb.HediffCompSource.Def.label + ": " + CurRangedVerb.HediffCompSource.Def.description : verbLabel + " :: " + CurRangedVerb.HediffCompSource.Def.label + ": " + CurRangedVerb.HediffCompSource.Def.description;
                         }
                         else
                         {
-                            rangedVerbGizmo.defaultDesc = "Race-Defined weapon of: " + this.Pawn.def.label + ": " + this.Pawn.def.description;
+                            rangedVerbGizmo.defaultDesc = (verbLabel.NullOrEmpty()) ? "Biological weapon of " + this.Pawn.def.label + ": " + this.Pawn.def.description : verbLabel + ": Biological weapon of " + this.Pawn.def.label;
                         }
                         tempIcon = CurRangedVerb.GetProjectile().uiIcon;
                         if (tempIcon != BaseContent.BadTex || tempIcon != null)
@@ -344,39 +345,6 @@ namespace VerbExpansionFramework
                 }
             }
             return false;
-        }
-
-        private static Gizmo GetSquadAttackGizmo(Pawn pawn)
-        {
-            Command_Target command_Target = new Command_Target();
-            command_Target.defaultLabel = "CommandSquadAttack".Translate();
-            command_Target.defaultDesc = "CommandSquadAttackDesc".Translate();
-            command_Target.targetingParams = TargetingParameters.ForAttackAny();
-            command_Target.hotKey = KeyBindingDefOf.Misc1;
-            command_Target.icon = TexCommand.SquadAttack;
-            string str;
-            if (FloatMenuUtility.GetAttackAction(pawn, LocalTargetInfo.Invalid, out str) == null)
-            {
-                command_Target.Disable(str.CapitalizeFirst() + ".");
-            }
-            command_Target.action = delegate (Thing target)
-            {
-                IEnumerable<Pawn> enumerable = Find.Selector.SelectedObjects.Where(delegate (object x)
-                {
-                    Pawn pawn3 = x as Pawn;
-                    return pawn3 != null && pawn3.IsColonistPlayerControlled && pawn3.Drafted;
-                }).Cast<Pawn>();
-                foreach (Pawn pawn2 in enumerable)
-                {
-                    string text;
-                    Action attackAction = FloatMenuUtility.GetAttackAction(pawn2, target, out text);
-                    if (attackAction != null)
-                    {
-                        attackAction();
-                    }
-                }
-            };
-            return command_Target;
         }
 
         public Verb CurRangedVerb

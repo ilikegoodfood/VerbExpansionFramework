@@ -109,7 +109,11 @@ namespace VerbExpansionFramework
                     Find.Targeter.StopTargeting();
                 }
 
-                if (verbEntry.verb.EquipmentCompSource != null)
+                if (!verbEntry.verb.verbProps.label.NullOrEmpty())
+                {
+                    verbLabel = verbEntry.verb.verbProps.label;
+                }
+                else if (verbEntry.verb.EquipmentCompSource != null)
                 {
                     verbLabel = verbEntry.verb.EquipmentCompSource.parent.Label;
                 }
