@@ -42,6 +42,7 @@ namespace VerbExpansionFramework
             harmony.Patch(original: MB_Pawn_DraftController_GetGizmo(), prefix: null, postfix: null, transpiler: new HarmonyMethod(type: patchType, name: nameof(Pawn_DraftController_GetGizmosTranspiler)));
             harmony.Patch(original: AccessTools.Method(type: typeof(Pawn), name: nameof(Pawn.TryGetAttackVerb)), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(Pawn_TryGetAttackVerbPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(ThoughtWorker_IsCarryingRangedWeapon), name: "CurrentStateInternal"), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(ThoughtWorker_IsCarryingRangedWeapon_CurrentStateInternalPostfix)));
+            harmony.Patch(original: AccessTools.Method(type: typeof(Verb_ShootOneUse), name: "SelfConsume"), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(Verb_ShootOneUse_SelfConsume)));
         }
 
         private static void Alert_BrawlerHasRangedWeapon_GetReportPostfix(ref AlertReport __result)
@@ -343,6 +344,14 @@ namespace VerbExpansionFramework
                 }
             }
             return;
+        }
+
+        private static void Verb_ShootOneUse_SelfConsume(Verb_ShootOneUse __instance)
+        {
+            if(__instance.HediffSource != null && __instance.HediffSource.pawn.health.hediffSet.HasHediff(__instance.HediffSource.def))
+            {
+                __instance.HediffSource.pawn.health.RemoveHediff(__instance.HediffSource);
+            }
         }
     }
 }
