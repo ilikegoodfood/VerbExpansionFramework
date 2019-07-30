@@ -178,23 +178,32 @@ namespace VerbExpansionFramework
             {
                 float highestScore = 0f;
                 int highestScoreIndex = -1;
-
+                
                 if (target == null)
                 {
                     for (int i = 0; i < updatedAvailableVerbsList.Count; i++)
                     {
-                        VerbEntry verbEntry = updatedAvailableVerbsList[i];
-                        Verb v = verbEntry.verb;
-                        ThingDef verbProjectile = v.GetProjectile();
-                        int projectileDamageAmount = (v.EquipmentCompSource == null) ? verbProjectile.projectile.GetDamageAmount(1f) : verbProjectile.projectile.GetDamageAmount(v.EquipmentCompSource.parent);
-                        List<float> accuracyList = (v.EquipmentCompSource == null) ? new List<float>() { v.verbProps.accuracyLong, v.verbProps.accuracyMedium, v.verbProps.accuracyShort, v.verbProps.accuracyTouch } : new List<float>() { v.EquipmentCompSource.parent.GetStatValue(StatDefOf.AccuracyLong), v.EquipmentCompSource.parent.GetStatValue(StatDefOf.AccuracyMedium), v.EquipmentCompSource.parent.GetStatValue(StatDefOf.AccuracyShort), v.EquipmentCompSource.parent.GetStatValue(StatDefOf.AccuracyTouch) };
-                        accuracyList.Sort();
-                        accuracyList.Reverse();
-                        float accuracyValue = (accuracyList[0] + accuracyList[1]) / 2;
-                        int burstShotCount = (v.verbProps.burstShotCount == 0) ? 1 : v.verbProps.burstShotCount;
-                        float fullCycleTime = v.verbProps.AdjustedFullCycleTime(v, this.Pawn);
+                        float currentScore;
 
-                        float currentScore = ((accuracyValue * projectileDamageAmount * burstShotCount) / (fullCycleTime)) + v.GetProjectile().projectile.explosionRadius - (v.verbProps.forcedMissRadius / burstShotCount);
+                        if (updatedAvailableVerbsList[i].verb.verbProps.spawnDef != null)
+                        {
+                            currentScore = 50 + i;
+                        }
+                        else
+                        {
+                            VerbEntry verbEntry = updatedAvailableVerbsList[i];
+                            Verb v = verbEntry.verb;
+                            ThingDef verbProjectile = v.GetProjectile();
+                            int projectileDamageAmount = (v.EquipmentCompSource == null) ? verbProjectile.projectile.GetDamageAmount(1f) : verbProjectile.projectile.GetDamageAmount(v.EquipmentCompSource.parent);
+                            List<float> accuracyList = (v.EquipmentCompSource == null) ? new List<float>() { v.verbProps.accuracyLong, v.verbProps.accuracyMedium, v.verbProps.accuracyShort, v.verbProps.accuracyTouch } : new List<float>() { v.EquipmentCompSource.parent.GetStatValue(StatDefOf.AccuracyLong), v.EquipmentCompSource.parent.GetStatValue(StatDefOf.AccuracyMedium), v.EquipmentCompSource.parent.GetStatValue(StatDefOf.AccuracyShort), v.EquipmentCompSource.parent.GetStatValue(StatDefOf.AccuracyTouch) };
+                            accuracyList.Sort();
+                            accuracyList.Reverse();
+                            float accuracyValue = (accuracyList[0] + accuracyList[1]) / 2;
+                            int burstShotCount = (v.verbProps.burstShotCount == 0) ? 1 : v.verbProps.burstShotCount;
+                            float fullCycleTime = v.verbProps.AdjustedFullCycleTime(v, this.Pawn);
+
+                            currentScore = ((accuracyValue * projectileDamageAmount * burstShotCount) / (fullCycleTime)) + v.GetProjectile().projectile.explosionRadius - (v.verbProps.forcedMissRadius / burstShotCount);
+                        }
 
                         if (currentScore > highestScore)
                         {
@@ -207,23 +216,32 @@ namespace VerbExpansionFramework
                 {
                     for (int i = 0; i < updatedAvailableVerbsList.Count; i++)
                     {
-                        VerbEntry verbEntry = updatedAvailableVerbsList[i];
-                        Verb v = verbEntry.verb;
-                        ThingDef verbProjectile = v.GetProjectile();
-                        int projectileDamageAmount = (v.EquipmentCompSource == null) ? verbProjectile.projectile.GetDamageAmount(1f) : verbProjectile.projectile.GetDamageAmount(v.EquipmentCompSource.parent);
-                        float accuracyValue = Verse.ShotReport.HitReportFor(Pawn, v, target).TotalEstimatedHitChance;
-                        int burstShotCount = (v.verbProps.burstShotCount == 0) ? 1 : v.verbProps.burstShotCount;
-                        float fullCycleTime = v.verbProps.AdjustedFullCycleTime(v, this.Pawn);
+                        float currentScore;
 
-                        float currentScore = ((accuracyValue * projectileDamageAmount * burstShotCount) / (fullCycleTime)) + v.GetProjectile().projectile.explosionRadius - (v.verbProps.forcedMissRadius / burstShotCount);
-                        if (target != null && v.IsIncendiary() && target.CanEverAttachFire() && !target.IsBurning())
+                        if (updatedAvailableVerbsList[i].verb.verbProps.spawnDef != null)
                         {
-                            currentScore += 10;
+                            currentScore = 50 + i;
                         }
-                        Pawn targetPawn = target as Pawn;
-                        if (targetPawn != null && v.IsEMP() && !targetPawn.RaceProps.IsFlesh)
+                        else
                         {
-                            currentScore += 10;
+                            VerbEntry verbEntry = updatedAvailableVerbsList[i];
+                            Verb v = verbEntry.verb;
+                            ThingDef verbProjectile = v.GetProjectile();
+                            int projectileDamageAmount = (v.EquipmentCompSource == null) ? verbProjectile.projectile.GetDamageAmount(1f) : verbProjectile.projectile.GetDamageAmount(v.EquipmentCompSource.parent);
+                            float accuracyValue = Verse.ShotReport.HitReportFor(Pawn, v, target).TotalEstimatedHitChance;
+                            int burstShotCount = (v.verbProps.burstShotCount == 0) ? 1 : v.verbProps.burstShotCount;
+                            float fullCycleTime = v.verbProps.AdjustedFullCycleTime(v, this.Pawn);
+
+                            currentScore = ((accuracyValue * projectileDamageAmount * burstShotCount) / (fullCycleTime)) + v.GetProjectile().projectile.explosionRadius - (v.verbProps.forcedMissRadius / burstShotCount);
+                            if (target != null && v.IsIncendiary() && target.CanEverAttachFire() && !target.IsBurning())
+                            {
+                                currentScore += 10;
+                            }
+                            Pawn targetPawn = target as Pawn;
+                            if (targetPawn != null && v.IsEMP() && !targetPawn.RaceProps.IsFlesh)
+                            {
+                                currentScore += 10;
+                            }
                         }
 
                         if (currentScore > highestScore)
