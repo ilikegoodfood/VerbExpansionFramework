@@ -1,0 +1,1 @@
+These exacmple patches and definitions will not show up in game in their current locations. In order to get them to appear in game, you must move ExamplePatches.xml to root/Patches. The rest of this folder than then be copied into root/Defs. Finally, this README.txt must be deleted from the copy in the root/Defs directory.
