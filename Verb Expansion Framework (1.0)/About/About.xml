@@ -4,14 +4,25 @@
 	<author>ilikegoodfood</author>
 	<supportedVersions><li>1.0</li></supportedVersions>
 	<description>
-	This Framework implements a number of improvements to the handling of attack verbs in RimWorld.
-	- Animals will now recognize and use ranged attack verbs.
-	- All pawns will recognize and use ranged attack verbs that are provided through apparel, equipment, hediffs and race definitions.
-	- AI will approximate the useful of any ranged verbs they possess, and select the most effective.
-	- A new `switch verb` has been added alongside the equipment gizmo. If a colonist has any ranged verb that is not from their equipment, this gizmo will display it and allow you to choose which ranged verb they will use in combat (colonist must be drafted to change selected verb).
-	
-	More enhancements to verbs are expected to follow, such as smoke-pop-belts and shield belts for animals and mechanoids, verbs with a cooldown period and much more besides.
-	
-	This is intended as a re-implementation of the RangedAnimalFramework for 1.0, with new, more powerful features and greater compatibility.
+The ranged expansion framework was initially concieved of as a complete re-implementation of the Range Animal Framework. This initial release has succeeded in that goal, along with a handful of other enhancements.
+The long term goal is to provide a broadly increased combat scope, making violence on the Rim more varied, tactical and exotic, than ever before.
+
+Features
+- All types of Pawn, be they animals, colonists, humanoids or mechanoids, will recognise and use Ranged Verbs from Equipment, Hediffs and Race Definitions.
+- If they have any, animals will use Ranged Verbs preferentially when manhunting (as will manhunting humanoids) or when defending their master.
+- AI with multiple ranged verbs will aproximate their usefullness and select the most useful ranged verb to use.
+- Colonists that have Ranged Verbs that are not from their Equipment or that have multiple Ranged Verbs will show an additonal Gizmo that allows the player to set which ranged verb they should use in combat (colonists must be drafted to make the selection).
+- Colonists that have Ranged Verbs but do not have any Equipment will display and respect the Toggle Fire-at-Will gizmo.
+- Ranged Verbs from Hediffs display all of the appropriate interactions with the Brawler Trait (unhappy thought, 'Brawler has Ranged Weapon' warning in sidebar, and the Operations 'Add Bill' Menu will display the 'Brawler will be unhappy' warning for appropriate operations).
+- All bleeding-capable pawns have their total bleed rate multiplied by the new Bleed Rate Capacity.
+- Implements versions of Explosions, Extinguishers, and Flames that do not trigger camera shake. Provided by Ogliss.
+
+Planned Features
+These features are palnned to be explored and, if possible, added to the framework as it grows. There is no guarentee that a feature listed here will make it into the framework.
+
+- Allow Ranged Verbs in the Race Definitions to be dependant upon a body part group, in much the same way as race defined Tools.
+- Implement Hediff Groupings, that are made up of multiple hediffs. Once the group is complete (a pawn has all of the hediffs in the group) apply a final hediff with additional features. Removal of a hediff in the group should remove this final hediff.
+- Implement Smoke-Pop Belts and Shield Belts for Hediffs and Race Definitions.
+- Implement new Verb Types, including Point-Blank Area of Effect Weapons, Filth-Producing Weapons (i.e. glue launchers, webbing or toxic dust), and Spawn sub-unit as attack (i.e. mechanoids that attack by spawning robo-bombs).
 	</description>
 </ModMetaData>
