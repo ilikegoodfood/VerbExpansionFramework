@@ -24,11 +24,10 @@
 							<!-- ==== in <statBases /> must instead be ==== -->
 							<!-- ======= defined inside of the verb. ====== -->
 							<verbClass>Verb_Shoot</verbClass>
-							<AccuracyTouch>0.80</AccuracyTouch>
-							<AccuracyShort>0.75</AccuracyShort>
-							<AccuracyMedium>0.45</AccuracyMedium>
-							<AccuracyLong>0.35</AccuracyLong>
-							<RangedWeapon_Cooldown>1.6</RangedWeapon_Cooldown>
+							<accuracyTouch>0.80</accuracyTouch>
+							<accuracyShort>0.75</accuracyShort>
+							<accuracyMedium>0.45</accuracyMedium>
+							<accuracyLong>0.35</accuracyLong>
 							<hasStandardCommand>true</hasStandardCommand>
 							<defaultProjectile>Bullet_Revolver</defaultProjectile>
 							<warmupTime>0.3</warmupTime>
