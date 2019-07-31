@@ -25,9 +25,12 @@ namespace VerbExpansionFramework
 
         static HarmonyPatches()
         {
+            // Harmony Setup and Debug
             Log.Message("VEF :: Performing Hamrony Patches");
             HarmonyInstance.DEBUG = false;
             HarmonyInstance harmony = HarmonyInstance.Create(id: "com.framework.expansion.verb");
+
+            // Harmony Patches required for Core operation.
             harmony.Patch(original: AccessTools.Method(type: typeof(Alert_BrawlerHasRangedWeapon), name: nameof(Alert_BrawlerHasRangedWeapon.GetReport)), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(Alert_BrawlerHasRangedWeapon_GetReportPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(AttackTargetsCache), name: nameof(AttackTargetsCache.GetPotentialTargetsFor)), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(AttackTargetsCache_GetPotentialTargetsForPostfix)));
             harmony.Patch(original: AccessTools.Constructor(type: typeof(BattleLogEntry_ExplosionImpact), parameters: new Type[] { typeof(Thing), typeof(Thing), typeof(ThingDef), typeof(ThingDef), typeof(DamageDef) }), prefix: new HarmonyMethod(type: patchType, name: nameof(BattleLogEntry_WeaponDefGrammarPrefix)), postfix: null);
@@ -43,11 +46,18 @@ namespace VerbExpansionFramework
             harmony.Patch(original: AccessTools.Method(type: typeof(Pawn), name: nameof(Pawn.TryGetAttackVerb)), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(Pawn_TryGetAttackVerbPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(ThoughtWorker_IsCarryingRangedWeapon), name: "CurrentStateInternal"), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(ThoughtWorker_IsCarryingRangedWeapon_CurrentStateInternalPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(Verb_ShootOneUse), name: "SelfConsume"), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(Verb_ShootOneUse_SelfConsume)));
+
+            // Harmony Patches for Mod Compatibility
+            if (VEF_ModCompatibilityCheck.rooloDualWield)
+            {
+                harmony.Patch(original: AccessTools.Method(type: GenTypes.GetTypeInAnyAssemblyNew("DualWield.Ext_Verb", "DualWield"), name: "OffhandTryStartCastOn"), prefix: new HarmonyMethod(type: patchType, name: nameof(DualWield_Ext_Verb_OffhandTryStartCastOn)), postfix: null);
+            }
         }
 
+        // Harmony Patches required for Core operation.
         private static void Alert_BrawlerHasRangedWeapon_GetReportPostfix(ref AlertReport __result)
         {
-            Log.Message("Postfixing");
+            // Log.Message("Postfixing");
             IEnumerable<Pawn> brawlersWithRangedWeapon = BrawlersWithRangedWeapon(__result);
             IEnumerable<Pawn> brawlersWithRangedHediff = BrawlersWithRangedHediff();
             
@@ -140,7 +150,7 @@ namespace VerbExpansionFramework
                 }
                 else if (usedVerb.HediffCompSource != null)
                 {
-                    ThingDef tempThingDef = new ThingDef() { defName = "tempThingDef :: " + usedVerb.HediffCompSource.parent.def.label, label = (usedVerb.verbProps.label.NullOrEmpty()) ? usedVerb.HediffCompSource.parent.def.label : usedVerb.verbProps.label, thingClass = typeof(ThingWithComps), category = ThingCategory.Item };
+                    ThingDef tempThingDef = new ThingDef() { defName = "tempThingDef :: " + usedVerb.HediffCompSource.parent.def.label, label = (usedVerb.verbProps.label == usedVerb.HediffSource.def.label) ? usedVerb.HediffSource.def.label: usedVerb.verbProps.label, thingClass = typeof(ThingWithComps), category = ThingCategory.Item };
 
                     MI_GiveShortHash.Invoke(null, new object[] { tempThingDef, tempThingDef.GetType() });
                     Traverse.Create(tempThingDef).Field("verbs").SetValue(new List<VerbProperties>() { usedVerb.verbProps });
@@ -149,7 +159,7 @@ namespace VerbExpansionFramework
                 }
                 else
                 {
-                    if (usedVerb.verbProps.label.NullOrEmpty())
+                    if (usedVerb.verbProps.label == pawn.def.label)
                     {
                         weaponDef = pawn.def;
                     }
@@ -364,6 +374,22 @@ namespace VerbExpansionFramework
             if(__instance.HediffSource != null && __instance.HediffSource.pawn.health.hediffSet.HasHediff(__instance.HediffSource.def))
             {
                 __instance.HediffSource.pawn.health.RemoveHediff(__instance.HediffSource);
+            }
+        }
+
+        // Harmony Patches for Mod Compatibility
+        private static bool DualWield_Ext_Verb_OffhandTryStartCastOn(Verb instance)
+        {
+            //Log.Message("Prefixing");
+            if (instance.EquipmentSource == null || instance.EquipmentSource.def != instance.CasterPawn.equipment.Primary.def)
+            {
+                Log.Message("Verb is not from Primary");
+                return false;
+            }
+            else
+            {
+                Log.Message("Verb is from Primary");
+                return true;
             }
         }
     }

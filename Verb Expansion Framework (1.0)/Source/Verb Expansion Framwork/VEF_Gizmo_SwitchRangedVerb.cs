@@ -39,6 +39,30 @@ namespace VerbExpansionFramework
             }
         }
 
+        public override GizmoResult GizmoOnGUI(Vector2 topLeft, float maxWidth)
+        {
+            GizmoResult result = base.GizmoOnGUI(topLeft, maxWidth);
+            if (VEF_ModCompatibilityCheck.rooloDualWield && verb.EquipmentSource != null && verb.EquipmentSource.def == pawn.equipment.Primary.def)
+            {
+                VEF_ReflectedMethods.TryGetOffHandEquipment(this.pawn.equipment, out ThingWithComps offHandThing);
+                if (offHandThing != null)
+                {
+                    GUI.color = offHandThing.DrawColor;
+                    Material mat = (!this.disabled) ? null : TexUI.GrayscaleGUI;
+                    Texture2D texture2D = offHandThing.def.uiIcon;
+                    bool flag = texture2D == null;
+                    if (flag)
+                    {
+                        texture2D = BaseContent.BadTex;
+                    }
+                    Rect outerRect = new Rect(topLeft.x, topLeft.y + 10f, this.GetWidth(maxWidth), 75f);
+                    Widgets.DrawTextureFitted(outerRect, texture2D, this.iconDrawScale * 0.85f, this.iconProportions, this.iconTexCoords, this.iconAngle, mat);
+                    GUI.color = Color.white;
+                }
+            }
+            return result;
+        }
+
         public override void GizmoUpdateOnMouseover()
         {
             if (verb != null)
@@ -82,10 +106,9 @@ namespace VerbExpansionFramework
             UpdateAllRangedVerbs();
             if (this.verb != null)
             {
-
                 if (allRangedVerbs.Count > 1 && GetSelectedPawns().Count == 1)
                 {
-                    Find.WindowStack.Add(MakeRangedVerbsMenu());
+                    Find.WindowStack.Add(CreateRangedVerbsMenu());
                 }
                 Find.Targeter.BeginTargeting(targetingParams, delegate (LocalTargetInfo target)
                 {
@@ -94,7 +117,7 @@ namespace VerbExpansionFramework
             }
         }
 
-        private FloatMenu MakeRangedVerbsMenu()
+        private FloatMenu CreateRangedVerbsMenu()
         {
             List<FloatMenuOption> floatOptionList = new List<FloatMenuOption>();
 
@@ -109,21 +132,18 @@ namespace VerbExpansionFramework
                     Find.Targeter.StopTargeting();
                 }
 
-                if (!verbEntry.verb.verbProps.label.NullOrEmpty())
+                if (verbEntry.verb.EquipmentCompSource != null)
                 {
-                    verbLabel = verbEntry.verb.verbProps.label;
-                }
-                else if (verbEntry.verb.EquipmentCompSource != null)
-                {
-                    verbLabel = verbEntry.verb.EquipmentCompSource.parent.Label;
+                    verbEntry.verb.EquipmentSource.TryGetQuality(out QualityCategory qualityString);
+                    verbLabel = (verbEntry.verb.verbProps.label == verbEntry.verb.EquipmentSource.def.label) ? verbEntry.verb.EquipmentSource.LabelCap : verbEntry.verb.verbProps.label + " " + qualityString;
                 }
                 else if (verbEntry.verb.HediffCompSource != null)
                 {
-                    verbLabel = verbEntry.verb.HediffCompSource.Def.label;
+                    verbLabel = (verbEntry.verb.verbProps.label == verbEntry.verb.HediffSource.def.label) ? verbEntry.verb.HediffCompSource.Def.LabelCap : verbEntry.verb.verbProps.label;
                 }
                 else
                 {
-                    verbLabel = "Race-Defined weapon of: " + this.pawn.def.label;
+                    verbLabel = (verbEntry.verb.verbProps.label == this.pawn.def.label) ? "Race-Defined weapon of " + this.pawn.def.label : verbEntry.verb.verbProps.label + ": " + "Race-Defined weapon of " + this.pawn.def.label;
                 }
 
                 floatOptionList.Add(new FloatMenuOption(verbLabel, onSelectVerb));

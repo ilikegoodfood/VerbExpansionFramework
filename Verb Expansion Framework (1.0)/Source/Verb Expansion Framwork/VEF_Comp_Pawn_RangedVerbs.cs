@@ -102,8 +102,7 @@ namespace VerbExpansionFramework
                         }).Cast<Pawn>();
                         foreach (Pawn pawn2 in enumerable)
                         {
-                            string text;
-                            FloatMenuUtility.GetAttackAction(pawn2, target, out text)?.Invoke();
+                            FloatMenuUtility.GetAttackAction(pawn2, target, out string text)?.Invoke();
                         }
                     };
                     this.visible = true;
@@ -111,25 +110,36 @@ namespace VerbExpansionFramework
                 else if (CurRangedVerb != null)
                 {
                     Texture2D tempIcon = BaseContent.BadTex;
-                    string verbLabel = (CurRangedVerb.verbProps.label.NullOrEmpty()) ? String.Empty : CurRangedVerb.verbProps.label;
-                    if (CurRangedVerb.EquipmentCompSource != null)
+                    if (CurRangedVerb.EquipmentSource != null)
                     {
-                        rangedVerbGizmo.defaultDesc = (verbLabel.NullOrEmpty()) ? CurRangedVerb.EquipmentCompSource.parent.Label + ": " + CurRangedVerb.EquipmentCompSource.parent.DescriptionDetailed : verbLabel + " :: " + CurRangedVerb.EquipmentCompSource.parent.Label + ": " + CurRangedVerb.EquipmentCompSource.parent.DescriptionDetailed;
-                        tempIcon = CurRangedVerb.EquipmentCompSource.parent.def.uiIcon;
-                        if (tempIcon != BaseContent.BadTex || tempIcon != null)
+                        if (VEF_ModCompatibilityCheck.rooloDualWield && CurRangedVerb.EquipmentSource == Pawn.equipment.Primary && VEF_ReflectedMethods.TryGetOffHandEquipment(Pawn.equipment, out ThingWithComps offHandEquipment))
                         {
-                            rangedVerbGizmo.icon = tempIcon;
+                            rangedVerbGizmo.defaultDesc = (CurRangedVerb.verbProps.label == CurRangedVerb.EquipmentSource.def.label) ? CurRangedVerb.EquipmentSource.LabelCap + ": " + CurRangedVerb.EquipmentSource.DescriptionDetailed : CurRangedVerb.verbProps.label + " :: " + CurRangedVerb.EquipmentSource.LabelCap + ": " + CurRangedVerb.EquipmentSource.DescriptionDetailed;
+                            tempIcon = CurRangedVerb.EquipmentSource.def.uiIcon;
+                            if (tempIcon != BaseContent.BadTex || tempIcon != null)
+                            {
+                                rangedVerbGizmo.icon = tempIcon;
+                            }
+                        }
+                        else
+                        {
+                            rangedVerbGizmo.defaultDesc = (CurRangedVerb.verbProps.label == CurRangedVerb.EquipmentSource.def.label) ? CurRangedVerb.EquipmentSource.LabelCap + ": " + CurRangedVerb.EquipmentSource.DescriptionDetailed : CurRangedVerb.verbProps.label + " :: " + CurRangedVerb.EquipmentSource.LabelCap + ": " + CurRangedVerb.EquipmentSource.DescriptionDetailed;
+                            tempIcon = CurRangedVerb.EquipmentSource.def.uiIcon;
+                            if (tempIcon != BaseContent.BadTex || tempIcon != null)
+                            {
+                                rangedVerbGizmo.icon = tempIcon;
+                            }
                         }
                     }
                     else if (CurRangedVerb.verbProps.LaunchesProjectile)
                     {
                         if (CurRangedVerb.HediffCompSource != null)
                         {
-                            rangedVerbGizmo.defaultDesc = (verbLabel.NullOrEmpty()) ? CurRangedVerb.HediffCompSource.Def.label + ": " + CurRangedVerb.HediffCompSource.Def.description : verbLabel + " :: " + CurRangedVerb.HediffCompSource.Def.label + ": " + CurRangedVerb.HediffCompSource.Def.description;
+                            rangedVerbGizmo.defaultDesc = (CurRangedVerb.verbProps.label == CurRangedVerb.HediffSource.def.label) ? CurRangedVerb.HediffCompSource.Def.LabelCap + ": " + CurRangedVerb.HediffCompSource.Def.description : CurRangedVerb.verbProps.label + " :: " + CurRangedVerb.HediffCompSource.Def.LabelCap + ": " + CurRangedVerb.HediffCompSource.Def.description;
                         }
                         else
                         {
-                            rangedVerbGizmo.defaultDesc = (verbLabel.NullOrEmpty()) ? "Biological weapon of " + this.Pawn.def.label + ": " + this.Pawn.def.description : verbLabel + ": Biological weapon of " + this.Pawn.def.label;
+                            rangedVerbGizmo.defaultDesc = (CurRangedVerb.verbProps.label == Pawn.def.label) ? "Biological weapon of " + this.Pawn.def.label + ": " + this.Pawn.def.description : CurRangedVerb.verbProps.label + " :: Biological weapon of " + this.Pawn.def.label + ": " + this.Pawn.def.description;
                         }
                         tempIcon = CurRangedVerb.GetProjectile().uiIcon;
                         if (tempIcon != BaseContent.BadTex || tempIcon != null)
@@ -145,6 +155,66 @@ namespace VerbExpansionFramework
             }
             yield return rangedVerbGizmo;
         }
+
+        private Command_VerbTarget CreateVerbTargetCommand(Thing ownerThing, Verb verb)
+        {
+            Command_VerbTarget command_VerbTarget = new Command_VerbTarget();
+            command_VerbTarget.defaultDesc = ownerThing.LabelCap + ": " + ownerThing.def.description.CapitalizeFirst();
+            command_VerbTarget.icon = ownerThing.def.uiIcon;
+            command_VerbTarget.iconAngle = ownerThing.def.uiIconAngle;
+            command_VerbTarget.iconOffset = ownerThing.def.uiIconOffset;
+            command_VerbTarget.tutorTag = "VerbTarget";
+            command_VerbTarget.verb = verb;
+            if (verb.caster.Faction != Faction.OfPlayer)
+            {
+                command_VerbTarget.Disable("CannotOrderNonControlled".Translate());
+            }
+            else if (verb.CasterIsPawn)
+            {
+                if (verb.CasterPawn.story.WorkTagIsDisabled(WorkTags.Violent))
+                {
+                    command_VerbTarget.Disable("IsIncapableOfViolence".Translate(verb.CasterPawn.LabelShort, verb.CasterPawn));
+                }
+                else if (!verb.CasterPawn.drafter.Drafted)
+                {
+                    command_VerbTarget.Disable("IsNotDrafted".Translate(verb.CasterPawn.LabelShort, verb.CasterPawn));
+                }
+            }
+            return command_VerbTarget;
+        }
+
+        private Command_Target CreateSquadTargetCommand(Pawn pawn)
+        {
+			Command_Target command_Target = new Command_Target();
+			command_Target.defaultLabel = "CommandSquadAttack".Translate();
+			command_Target.defaultDesc = "CommandSquadAttackDesc".Translate();
+			command_Target.targetingParams = TargetingParameters.ForAttackAny();
+			command_Target.hotKey = KeyBindingDefOf.Misc1;
+			command_Target.icon = TexCommand.SquadAttack;
+			string str;
+			if (FloatMenuUtility.GetAttackAction(pawn, LocalTargetInfo.Invalid, out str) == null)
+			{
+				command_Target.Disable(str.CapitalizeFirst() + ".");
+			}
+			command_Target.action = delegate(Thing target)
+			{
+				IEnumerable<Pawn> enumerable = Find.Selector.SelectedObjects.Where(delegate(object x)
+				{
+					Pawn pawn3 = x as Pawn;
+					return pawn3 != null && pawn3.IsColonistPlayerControlled && pawn3.Drafted;
+				}).Cast<Pawn>();
+				foreach (Pawn pawn2 in enumerable)
+				{
+					string text;
+					Action attackAction = FloatMenuUtility.GetAttackAction(pawn2, target, out text);
+					if (attackAction != null)
+					{
+						attackAction();
+					}
+				}
+			};
+			return command_Target;
+		}
 
         public Verb TryGetRangedVerb(Thing target)
         {
@@ -287,9 +357,32 @@ namespace VerbExpansionFramework
                         {
                             for (int k = 0; k < allEquipmentVerbs.Count; k++)
                             {
-                                if (!allEquipmentVerbs[k].IsMeleeAttack && allEquipmentVerbs[k].IsStillUsableBy(this.Pawn))
+                                if (VEF_ModCompatibilityCheck.rooloDualWield)
                                 {
-                                    this.rangedVerbs.Add(new VerbEntry(allEquipmentVerbs[k], this.Pawn));
+                                    ThingWithComps offHandEquipment;
+                                    VEF_ReflectedMethods.TryGetOffHandEquipment(Pawn.equipment, out offHandEquipment);
+                                    if (offHandEquipment != null)
+                                    {
+                                        if (!allEquipmentVerbs[k].IsMeleeAttack && allEquipmentVerbs[k].EquipmentSource != offHandEquipment && allEquipmentVerbs[k].IsStillUsableBy(this.Pawn))
+                                        {
+                                            this.rangedVerbs.Add(new VerbEntry(allEquipmentVerbs[k], this.Pawn));
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if (!allEquipmentVerbs[k].IsMeleeAttack && allEquipmentVerbs[k].IsStillUsableBy(this.Pawn))
+                                        {
+                                            this.rangedVerbs.Add(new VerbEntry(allEquipmentVerbs[k], this.Pawn));
+                                        }
+                                    }
+
+                                }
+                                else
+                                {
+                                    if (!allEquipmentVerbs[k].IsMeleeAttack && allEquipmentVerbs[k].IsStillUsableBy(this.Pawn))
+                                    {
+                                        this.rangedVerbs.Add(new VerbEntry(allEquipmentVerbs[k], this.Pawn));
+                                    }
                                 }
                             }
                         }

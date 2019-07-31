@@ -30,6 +30,7 @@
 							<accuracyLong>0.35</accuracyLong>
 							<hasStandardCommand>true</hasStandardCommand>
 							<defaultProjectile>Bullet_Revolver</defaultProjectile>
+							<defaultCooldownTime>1.6</defaultCooldownTime>
 							<warmupTime>0.3</warmupTime>
 							<range>25.9</range>
 							<soundCast>Shot_Revolver</soundCast>

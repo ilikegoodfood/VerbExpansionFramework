@@ -56,9 +56,11 @@
     <Compile Include="Damage Workers\VEF_DamageWorker_BombNoShake.cs" />
     <Compile Include="Damage Workers\VEF_DamageWorker_ExtinguishNoShake.cs" />
     <Compile Include="VEF_Comp_Pawn_RangedVerbs.cs" />
+    <Compile Include="VEF_ModCompatibilityCheck.cs" />
     <Compile Include="VEF_DefOf.cs" />
     <Compile Include="VEF_FloatMenuUtility.cs" />
     <Compile Include="VEF_Gizmo_SwitchRangedVerb.cs" />
+    <Compile Include="VEF_ReflectedMethods.cs" />
     <None Include="OldCode\VEF_AttackTargetFinder.cs" />
     <Compile Include="VEF_JobGiver_ManhunterRanged.cs" />
     <Compile Include="HarmonyPatches.cs" />
