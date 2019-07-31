@@ -41,7 +41,7 @@ namespace VerbExpansionFramework
             harmony.Patch(original: AccessTools.Method(type: typeof(HealthCardUtility), name: "GenerateSurgeryOption"), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(HealthCardUtility_GenerateSurgeryOptionPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(HediffSet), name: "CalculateBleedRate"), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(HediffSet_CalculateBleedRatePostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(JobDriver_Wait), name: "CheckForAutoAttack"), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(JobDriver_Wait_CheckForAutoAttackPostfix)));
-            harmony.Patch(original: AccessTools.Method(type: typeof(PawnAttackGizmoUtility), name: "GetSquadAttackGizmo"), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(PawnAttackGizmoUtility_GetSquadAttackGizmo)));
+            harmony.Patch(original: AccessTools.Method(type: typeof(PawnAttackGizmoUtility), name: "GetSquadAttackGizmo"), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(PawnAttackGizmoUtility_GetSquadAttackGizmoPostfix)));
             harmony.Patch(original: MB_Pawn_DraftController_GetGizmo(), prefix: null, postfix: null, transpiler: new HarmonyMethod(type: patchType, name: nameof(Pawn_DraftController_GetGizmosTranspiler)));
             harmony.Patch(original: AccessTools.Method(type: typeof(Pawn), name: nameof(Pawn.TryGetAttackVerb)), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(Pawn_TryGetAttackVerbPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(ThoughtWorker_IsCarryingRangedWeapon), name: "CurrentStateInternal"), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(ThoughtWorker_IsCarryingRangedWeapon_CurrentStateInternalPostfix)));
@@ -250,10 +250,23 @@ namespace VerbExpansionFramework
             return;
         }
 
-        private static void PawnAttackGizmoUtility_GetSquadAttackGizmo(Pawn pawn, ref Gizmo __result)
+        private static void PawnAttackGizmoUtility_GetSquadAttackGizmoPostfix(Pawn pawn, ref Gizmo __result)
         {
             Command_Target command_Target = (Command_Target)__result;
-            if (VEF_Comp_Pawn_RangedVerbs.ShouldUseSquadAttackGizmo())
+            bool flag = false;
+            List<object> selectedObjectsListForReading = Find.Selector.SelectedObjectsListForReading;
+            if (selectedObjectsListForReading.Count > 1)
+            {
+                for (int i = 0; i < selectedObjectsListForReading.Count; i++)
+                {
+                    Pawn pawn2 = selectedObjectsListForReading[i] as Pawn;
+                    if (pawn2 != null && pawn2.IsColonistPlayerControlled && (pawn2.GetComp<VEF_Comp_Pawn_RangedVerbs>().CurRangedVerb.EquipmentSource == null || pawn2.GetComp<VEF_Comp_Pawn_RangedVerbs>().CurRangedVerb.EquipmentSource.def != pawn2.equipment.Primary.def))
+                    {
+                        flag = true;
+                    }
+                }
+            }
+            if (flag || VEF_Comp_Pawn_RangedVerbs.ShouldUseSquadAttackGizmo())
             {
                 command_Target.defaultLabel = "CommandSquadEquipmentAttack".Translate();
                 command_Target.defaultDesc = "CommandSquadEquipmentAttackDesc".Translate();

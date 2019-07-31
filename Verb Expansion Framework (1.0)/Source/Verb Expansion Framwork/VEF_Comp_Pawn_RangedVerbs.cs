@@ -156,66 +156,6 @@ namespace VerbExpansionFramework
             yield return rangedVerbGizmo;
         }
 
-        private Command_VerbTarget CreateVerbTargetCommand(Thing ownerThing, Verb verb)
-        {
-            Command_VerbTarget command_VerbTarget = new Command_VerbTarget();
-            command_VerbTarget.defaultDesc = ownerThing.LabelCap + ": " + ownerThing.def.description.CapitalizeFirst();
-            command_VerbTarget.icon = ownerThing.def.uiIcon;
-            command_VerbTarget.iconAngle = ownerThing.def.uiIconAngle;
-            command_VerbTarget.iconOffset = ownerThing.def.uiIconOffset;
-            command_VerbTarget.tutorTag = "VerbTarget";
-            command_VerbTarget.verb = verb;
-            if (verb.caster.Faction != Faction.OfPlayer)
-            {
-                command_VerbTarget.Disable("CannotOrderNonControlled".Translate());
-            }
-            else if (verb.CasterIsPawn)
-            {
-                if (verb.CasterPawn.story.WorkTagIsDisabled(WorkTags.Violent))
-                {
-                    command_VerbTarget.Disable("IsIncapableOfViolence".Translate(verb.CasterPawn.LabelShort, verb.CasterPawn));
-                }
-                else if (!verb.CasterPawn.drafter.Drafted)
-                {
-                    command_VerbTarget.Disable("IsNotDrafted".Translate(verb.CasterPawn.LabelShort, verb.CasterPawn));
-                }
-            }
-            return command_VerbTarget;
-        }
-
-        private Command_Target CreateSquadTargetCommand(Pawn pawn)
-        {
-			Command_Target command_Target = new Command_Target();
-			command_Target.defaultLabel = "CommandSquadAttack".Translate();
-			command_Target.defaultDesc = "CommandSquadAttackDesc".Translate();
-			command_Target.targetingParams = TargetingParameters.ForAttackAny();
-			command_Target.hotKey = KeyBindingDefOf.Misc1;
-			command_Target.icon = TexCommand.SquadAttack;
-			string str;
-			if (FloatMenuUtility.GetAttackAction(pawn, LocalTargetInfo.Invalid, out str) == null)
-			{
-				command_Target.Disable(str.CapitalizeFirst() + ".");
-			}
-			command_Target.action = delegate(Thing target)
-			{
-				IEnumerable<Pawn> enumerable = Find.Selector.SelectedObjects.Where(delegate(object x)
-				{
-					Pawn pawn3 = x as Pawn;
-					return pawn3 != null && pawn3.IsColonistPlayerControlled && pawn3.Drafted;
-				}).Cast<Pawn>();
-				foreach (Pawn pawn2 in enumerable)
-				{
-					string text;
-					Action attackAction = FloatMenuUtility.GetAttackAction(pawn2, target, out text);
-					if (attackAction != null)
-					{
-						attackAction();
-					}
-				}
-			};
-			return command_Target;
-		}
-
         public Verb TryGetRangedVerb(Thing target)
         {
             UpdateRangedVerbs();
