@@ -352,7 +352,7 @@ namespace VerbExpansionFramework
                 Pawn pawn = selectedObjectsListForReading[i] as Pawn;
                 if (pawn != null && pawn.IsColonistPlayerControlled && !pawn.story.WorkTagIsDisabled(WorkTags.Violent))
                 {
-                    if (pawn.GetComp<VEF_Comp_Pawn_RangedVerbs>().CurRangedVerb != null && ( pawn.equipment.Primary == null || pawn.GetComp<VEF_Comp_Pawn_RangedVerbs>().CurRangedVerb.EquipmentSource != pawn.equipment.Primary))
+                    if (pawn.GetComp<VEF_Comp_Pawn_RangedVerbs>().CurRangedVerb != null && ( pawn.equipment.Primary == null || pawn.GetComp<VEF_Comp_Pawn_RangedVerbs>().CurRangedVerb.EquipmentSource.def != pawn.equipment.Primary.def))
                     {
                         return true;
                     }

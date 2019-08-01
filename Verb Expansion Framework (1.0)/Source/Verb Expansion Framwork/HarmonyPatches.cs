@@ -50,7 +50,12 @@ namespace VerbExpansionFramework
             // Harmony Patches for Mod Compatibility
             if (VEF_ModCompatibilityCheck.rooloDualWield)
             {
+                // Dual Wield
                 harmony.Patch(original: AccessTools.Method(type: GenTypes.GetTypeInAnyAssemblyNew("DualWield.Ext_Verb", "DualWield"), name: "OffhandTryStartCastOn"), prefix: new HarmonyMethod(type: patchType, name: nameof(DualWield_Ext_Verb_OffhandTryStartCastOn)), postfix: null);
+                //Range Animal Framework
+                harmony.Patch(original: AccessTools.Method(type: GenTypes.GetTypeInAnyAssemblyNew("AnimalRangeAttack.ARA_FightAI_Patch", "AnimalRangeAttack"), name: "Prefix"), prefix: null, postfix: null, transpiler: new HarmonyMethod(type: patchType, name: nameof(PrefixSlayerTranspiler)));
+                harmony.Patch(original: AccessTools.Method(type: GenTypes.GetTypeInAnyAssemblyNew("AnimalRangeAttack.ARA_ManHunter_Patch", "AnimalRangeAttack"), name: "Prefix"), prefix: null, postfix: null, transpiler: new HarmonyMethod(type: patchType, name: nameof(PrefixSlayerTranspiler)));
+                harmony.Patch(original: AccessTools.Method(type: GenTypes.GetTypeInAnyAssemblyNew("AnimalRangeAttack.ARA_VerbCheck_Patch", "AnimalRangeAttack"), name: "Prefix"), prefix: null, postfix: null, transpiler: new HarmonyMethod(type: patchType, name: nameof(PrefixSlayerTranspiler)));
             }
         }
 
@@ -130,7 +135,7 @@ namespace VerbExpansionFramework
 
             Pawn pawn = initiator as Pawn;
 
-            if (initiator != null)
+            if (pawn != null && pawn.mindState.enemyTarget != null)
             {
                 Verb usedVerb = pawn.GetComp<VEF_Comp_Pawn_RangedVerbs>().CurRangedVerb;
 
@@ -284,7 +289,7 @@ namespace VerbExpansionFramework
                     }).Cast<Pawn>();
                     foreach (Pawn pawn2 in pawns)
                     {
-                        if (pawn2.equipment.Primary != null)
+                        if (pawn2.equipment.Primary != null && pawn2.GetComp<VEF_Comp_Pawn_RangedVerbs>().CurRangedVerb.EquipmentSource.def != pawn2.equipment.Primary.def)
                         {
                             pawn2.GetComp<VEF_Comp_Pawn_RangedVerbs>().SetCurRangedVerb(pawn2.equipment.PrimaryEq.PrimaryVerb, null);
                         }
@@ -404,6 +409,12 @@ namespace VerbExpansionFramework
                 Log.Message("Verb is from Primary");
                 return true;
             }
+        }
+
+        private IEnumerable<CodeInstruction> PrefixSlayerTranspiler(IEnumerable<CodeInstruction> codeInstructions)
+        {
+            yield return new CodeInstruction(opcode: OpCodes.Ldc_I4_1);
+            yield return new CodeInstruction(opcode: OpCodes.Ret);
         }
     }
 }
