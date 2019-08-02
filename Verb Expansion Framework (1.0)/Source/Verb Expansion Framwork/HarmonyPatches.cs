@@ -33,7 +33,7 @@ namespace VerbExpansionFramework
             // Harmony Patches required for Core operation.
             harmony.Patch(original: AccessTools.Method(type: typeof(Alert_BrawlerHasRangedWeapon), name: nameof(Alert_BrawlerHasRangedWeapon.GetReport)), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(Alert_BrawlerHasRangedWeapon_GetReportPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(AttackTargetsCache), name: nameof(AttackTargetsCache.GetPotentialTargetsFor)), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(AttackTargetsCache_GetPotentialTargetsForPostfix)));
-            harmony.Patch(original: AccessTools.Constructor(type: typeof(BattleLogEntry_ExplosionImpact), parameters: new Type[] { typeof(Thing), typeof(Thing), typeof(ThingDef), typeof(ThingDef), typeof(DamageDef) }), prefix: new HarmonyMethod(type: patchType, name: nameof(BattleLogEntry_WeaponDefGrammarPrefix)), postfix: null);
+            //harmony.Patch(original: AccessTools.Constructor(type: typeof(BattleLogEntry_ExplosionImpact), parameters: new Type[] { typeof(Thing), typeof(Thing), typeof(ThingDef), typeof(ThingDef), typeof(DamageDef) }), prefix: new HarmonyMethod(type: patchType, name: nameof(BattleLogEntry_WeaponDefGrammarPrefix)), postfix: null);
             harmony.Patch(original: AccessTools.Constructor(type: typeof(BattleLogEntry_RangedFire), parameters: new Type[] { typeof(Thing), typeof(Thing), typeof(ThingDef), typeof(ThingDef), typeof(bool) }), prefix: new HarmonyMethod(type: patchType, name: nameof(BattleLogEntry_WeaponDefGrammarPrefix)), postfix: null);
             harmony.Patch(original: AccessTools.Constructor(type: typeof(BattleLogEntry_RangedImpact), parameters: new Type[] { typeof(Thing), typeof(Thing), typeof(Thing), typeof(ThingDef), typeof(ThingDef), typeof(ThingDef) }), prefix: new HarmonyMethod(type: patchType, name: nameof(BattleLogEntry_WeaponDefGrammarPrefix)), postfix: null);
             harmony.Patch(original: AccessTools.Method(type: typeof(Command_VerbTarget), name: nameof(Command_VerbTarget.ProcessInput)), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(Command_VerbTarget_ProcessInputPostfix)));
@@ -133,29 +133,30 @@ namespace VerbExpansionFramework
         {
             MethodInfo MI_GiveShortHash = AccessTools.Method(type: typeof(ShortHashGiver), name: "GiveShortHash", parameters: new Type[] { typeof(Def), typeof(Type) });
 
-            Pawn pawn = initiator as Pawn;
-
-            if (pawn != null && pawn.mindState.enemyTarget != null)
+            if (initiator is Pawn pawn)
             {
                 Verb usedVerb = pawn.GetComp<VEF_Comp_Pawn_RangedVerbs>().CurRangedVerb;
 
                 if (usedVerb == null)
                 {
-                    Thing enemyTarget = pawn.mindState.enemyTarget;
-                    float targetKeepRadius = 65f;
-                    if (enemyTarget != null && (enemyTarget.Destroyed || Find.TickManager.TicksGame - pawn.mindState.lastEngageTargetTick > 400 || !pawn.CanReach(enemyTarget, PathEndMode.Touch, Danger.Deadly, false, TraverseMode.ByPawn) || (float)(pawn.Position - enemyTarget.Position).LengthHorizontalSquared > targetKeepRadius * targetKeepRadius || ((IAttackTarget)enemyTarget).ThreatDisabled(pawn)))
-                    {
-                        enemyTarget = null;
-                    }
-                    usedVerb = pawn.GetComp<VEF_Comp_Pawn_RangedVerbs>().TryGetRangedVerb(enemyTarget);
+                    usedVerb = pawn.GetComp<VEF_Comp_Pawn_RangedVerbs>().TryGetRangedVerb(pawn.mindState.enemyTarget);
                 }
-                if (usedVerb.EquipmentCompSource != null)
+
+                if (usedVerb == null)
                 {
                     return;
                 }
-                else if (usedVerb.HediffCompSource != null)
+                else if (pawn.equipment != null && pawn.equipment.Primary != null && usedVerb.EquipmentSource != null && usedVerb.EquipmentSource.def == pawn.equipment.Primary.def)
                 {
-                    ThingDef tempThingDef = new ThingDef() { defName = "tempThingDef :: " + usedVerb.HediffCompSource.parent.def.label, label = (usedVerb.verbProps.label == usedVerb.HediffSource.def.label) ? usedVerb.HediffSource.def.label: usedVerb.verbProps.label, thingClass = typeof(ThingWithComps), category = ThingCategory.Item };
+                    return;
+                }
+                else if (usedVerb.EquipmentSource != null)
+                {
+                    weaponDef = usedVerb.EquipmentSource.def;
+                }
+                else if (usedVerb.HediffSource != null)
+                {
+                    ThingDef tempThingDef = new ThingDef() { defName = "tempThingDef :: " + usedVerb.HediffSource.def.label, label = (usedVerb.verbProps.label == usedVerb.HediffSource.def.label) ? usedVerb.HediffSource.def.label : usedVerb.verbProps.label, thingClass = typeof(ThingWithComps), category = ThingCategory.Item };
 
                     MI_GiveShortHash.Invoke(null, new object[] { tempThingDef, tempThingDef.GetType() });
                     Traverse.Create(tempThingDef).Field("verbs").SetValue(new List<VerbProperties>() { usedVerb.verbProps });
@@ -177,7 +178,7 @@ namespace VerbExpansionFramework
 
                         weaponDef = tempThingDef;
                     }
-                    
+
                 }
             }
             return;

@@ -10,7 +10,7 @@ using UnityEngine;
 namespace VerbExpansionFramework
 {
     [StaticConstructorOnStartup]
-    public class VEF_Gizmo_SwitchRangedVerb : Command_Target
+    public class VEF_Gizmo_SwitchRangedVerb : Command_VerbTarget
     {
         public VEF_Gizmo_SwitchRangedVerb(Pawn pawn)
         {
@@ -98,22 +98,15 @@ namespace VerbExpansionFramework
 
         public override void ProcessInput(Event ev)
         {
-            this.tutorTag = "VerbSelection";
-            base.ProcessInput(ev);
-            SoundDefOf.Tick_Tiny.PlayOneShotOnCamera(null);
-
             UpdateCurRangedVerb();
             UpdateAllRangedVerbs();
-            if (this.verb != null)
+
+            this.tutorTag = "VerbSelection";
+            base.ProcessInput(ev);
+
+            if (allRangedVerbs.Count > 1 && GetSelectedPawns().Count == 1)
             {
-                if (allRangedVerbs.Count > 1 && GetSelectedPawns().Count == 1)
-                {
-                    Find.WindowStack.Add(CreateRangedVerbsMenu());
-                }
-                Find.Targeter.BeginTargeting(targetingParams, delegate (LocalTargetInfo target)
-                {
-                    this.action(target.Thing);
-                }, null, null, null);
+                Find.WindowStack.Add(CreateRangedVerbsMenu());
             }
         }
 
@@ -135,15 +128,15 @@ namespace VerbExpansionFramework
                 if (verbEntry.verb.EquipmentCompSource != null)
                 {
                     verbEntry.verb.EquipmentSource.TryGetQuality(out QualityCategory qualityString);
-                    verbLabel = (verbEntry.verb.verbProps.label == verbEntry.verb.EquipmentSource.def.label) ? verbEntry.verb.EquipmentSource.LabelCap : verbEntry.verb.verbProps.label + " " + qualityString;
+                    verbLabel = (verbEntry.verb.verbProps.label == verbEntry.verb.EquipmentSource.def.label) ? verbEntry.verb.EquipmentSource.LabelCap : verbEntry.verb.verbProps.label.CapitalizeFirst() + " " + qualityString;
                 }
                 else if (verbEntry.verb.HediffCompSource != null)
                 {
-                    verbLabel = (verbEntry.verb.verbProps.label == verbEntry.verb.HediffSource.def.label) ? verbEntry.verb.HediffCompSource.Def.LabelCap : verbEntry.verb.verbProps.label;
+                    verbLabel = (verbEntry.verb.verbProps.label == verbEntry.verb.HediffSource.def.label) ? verbEntry.verb.HediffSource.def.LabelCap : verbEntry.verb.verbProps.label.CapitalizeFirst();
                 }
                 else
                 {
-                    verbLabel = (verbEntry.verb.verbProps.label == this.pawn.def.label) ? "Race-Defined weapon of " + this.pawn.def.label : verbEntry.verb.verbProps.label + ": " + "Race-Defined weapon of " + this.pawn.def.label;
+                    verbLabel = (verbEntry.verb.verbProps.label == this.pawn.def.label) ? "Race-Defined weapon of " + this.pawn.def.label : verbEntry.verb.verbProps.label.CapitalizeFirst() + ": " + "Race-Defined weapon of " + this.pawn.def.label;
                 }
 
                 floatOptionList.Add(new FloatMenuOption(verbLabel, onSelectVerb));
@@ -159,7 +152,7 @@ namespace VerbExpansionFramework
 
         private void UpdateAllRangedVerbs()
         {
-            this.allRangedVerbs = this.pawn.GetComp<VEF_Comp_Pawn_RangedVerbs>().getRangedVerbs;
+            this.allRangedVerbs = this.pawn.GetComp<VEF_Comp_Pawn_RangedVerbs>().GetRangedVerbs;
         }
 
         private List<Pawn> GetSelectedPawns()
@@ -171,8 +164,6 @@ namespace VerbExpansionFramework
             }).Cast<Pawn>();
             return selectedPawnsIEnum.ToList();
         }
-
-        public Verb verb;
 
         private Pawn pawn;
 
