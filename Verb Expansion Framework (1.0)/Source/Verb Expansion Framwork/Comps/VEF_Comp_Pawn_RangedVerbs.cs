@@ -62,36 +62,36 @@ namespace VerbExpansionFramework
                 order = +1f,
                 verb = verb
             };
-            if (verb.caster.Faction != Faction.OfPlayer)
-            {
-                command_VerbTarget.Disable("CannotOrderNonControlled".Translate());
-            }
-            else if (verb.CasterIsPawn)
-            {
-                // Disables Conditions
-                if (verb.CasterPawn.story.WorkTagIsDisabled(WorkTags.Violent))
-                {
-                    command_VerbTarget.Disable("IsIncapableOfViolence".Translate(verb.CasterPawn.LabelShort, verb.CasterPawn));
-                }
-                else if (!verb.CasterPawn.drafter.Drafted)
-                {
-                    command_VerbTarget.Disable("IsNotDrafted".Translate(verb.CasterPawn.LabelShort, verb.CasterPawn));
-                }
-
-                // Visible Conditions
-                if (verb == null || (rangedVerbs.Count == 1 && verb.EquipmentSource != null && verb.EquipmentSource == verb.CasterPawn.equipment.Primary) || (verb.CasterPawn.story.WorkTagIsDisabled(WorkTags.Violent) && !verb.CasterPawn.Drafted))
-                {
-                    this.visible = false;
-                }
-                else
-                {
-                    this.visible = true;
-                }
-            }
-
-            //Description, Icon and Label Conditions
             if (verb != null)
             {
+                if (verb.caster.Faction != Faction.OfPlayer)
+                {
+                    command_VerbTarget.Disable("CannotOrderNonControlled".Translate());
+                }
+                else if (verb.CasterIsPawn)
+                {
+                    // Disables Conditions
+                    if (verb.CasterPawn.story.WorkTagIsDisabled(WorkTags.Violent))
+                    {
+                        command_VerbTarget.Disable("IsIncapableOfViolence".Translate(verb.CasterPawn.LabelShort, verb.CasterPawn));
+                    }
+                    else if (!verb.CasterPawn.drafter.Drafted)
+                    {
+                        command_VerbTarget.Disable("IsNotDrafted".Translate(verb.CasterPawn.LabelShort, verb.CasterPawn));
+                    }
+
+                    // Visible Conditions
+                    if (verb == null || (rangedVerbs.Count == 1 && verb.EquipmentSource != null && verb.EquipmentSource == verb.CasterPawn.equipment.Primary) || (verb.CasterPawn.story.WorkTagIsDisabled(WorkTags.Violent) && !verb.CasterPawn.Drafted))
+                    {
+                        this.visible = false;
+                    }
+                    else
+                    {
+                        this.visible = true;
+                    }
+                }
+
+                //Description, Icon and Label Conditions
                 Texture2D tempIcon = BaseContent.BadTex;
                 if (CurRangedVerb.EquipmentSource != null)
                 {
