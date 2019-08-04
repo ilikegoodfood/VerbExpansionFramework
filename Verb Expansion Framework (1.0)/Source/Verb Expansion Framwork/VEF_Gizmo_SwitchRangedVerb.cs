@@ -42,9 +42,9 @@ namespace VerbExpansionFramework
         public override GizmoResult GizmoOnGUI(Vector2 topLeft, float maxWidth)
         {
             GizmoResult result = base.GizmoOnGUI(topLeft, maxWidth);
-            if (VEF_ModCompatibilityCheck.rooloDualWield && verb.EquipmentSource != null && verb.EquipmentSource.def == pawn.equipment.Primary.def && !VEF_Comp_Pawn_RangedVerbs.ShouldUseSquadAttackGizmo())
+            if (VEF_ModCompatibilityCheck.enabled_rooloDualWield && verb.EquipmentSource != null && verb.EquipmentSource.def == pawn.equipment.Primary.def && !VEF_Comp_Pawn_RangedVerbs.ShouldUseSquadAttackGizmo())
             {
-                VEF_ReflectedMethods.TryGetOffHandEquipment(this.pawn.equipment, out ThingWithComps offHandThing);
+                VEF_ReflectionData.TryGetOffHandEquipment(this.pawn.equipment, out ThingWithComps offHandThing);
                 if (offHandThing != null)
                 {
                     GUI.color = offHandThing.DrawColor;

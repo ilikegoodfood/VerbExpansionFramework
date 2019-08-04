@@ -8,28 +8,24 @@ using UnityEngine;
 
 namespace VerbExpansionFramework
 {
-    public class VEF_ThingComp_SmokepopDefense : ThingComp
+    class VEF_HediffComp_SmokepopDefense : HediffComp
     {
-        public VEF_ThingCompProperties_SmokepopDefense Props
+        public VEF_HediffCompProperties_SmokepopDefense Props
         {
             get
             {
-                return (VEF_ThingCompProperties_SmokepopDefense)this.props;
+                return (VEF_HediffCompProperties_SmokepopDefense)this.props;
             }
         }
 
-        public override void PostSpawnSetup(bool respawningAfterLoad)
+        public override void CompPostMake()
         {
-            owner = (Pawn)parent;
-            if (!respawningAfterLoad)
-            {
-                Props.smokeRadius = UnityEngine.Random.Range(Props.smokeRadius * 0.9f, Props.smokeRadius * 1.1f);
-                Props.rechargeTime = UnityEngine.Mathf.RoundToInt(UnityEngine.Random.Range(Props.rechargeTime * 60 * 0.9f, Props.rechargeTime * 60 * 1.1f) / 60);
-            }
+            owner = Pawn;
+            Props.smokeRadius = UnityEngine.Random.Range(Props.smokeRadius * 0.9f, Props.smokeRadius * 1.1f);
+            Props.rechargeTime = UnityEngine.Mathf.RoundToInt(UnityEngine.Random.Range(Props.rechargeTime * 60 * 0.9f, Props.rechargeTime * 60 * 1.1f) / 60);
         }
-        public override void PostPreApplyDamage(DamageInfo dinfo, out bool absorbed)
+        public void TryTriggerSmokepopDefense(DamageInfo dinfo)
         {
-            absorbed = false;
             if (Find.TickManager.TicksGame > lastUsedSmoke + (Props.rechargeTime * 60))
             {
                 if (!dinfo.Def.isExplosive && dinfo.Def.harmsHealth && dinfo.Def.ExternalViolenceFor(this.owner as Thing) && dinfo.Instigator is Pawn instigatorPawn && instigatorPawn.GetComp<VEF_Comp_Pawn_RangedVerbs>().CurRangedVerb != null && instigatorPawn.Position.DistanceTo(this.owner.Position) > 3f)
@@ -44,16 +40,7 @@ namespace VerbExpansionFramework
             }
         }
 
-        public override void PostExposeData()
-        {
-            base.PostExposeData();
-            Scribe_References.Look<ThingWithComps>(ref this.owner, "owner", false);
-            Scribe_Values.Look<int>(ref this.lastUsedSmoke, "lastUsedSmoke");
-            Scribe_Values.Look<int>(ref Props.rechargeTime, "rechargeTime", 1, false);
-            Scribe_Values.Look<float>(ref Props.smokeRadius, "smokeRadius", 0, false);
-        }
-
-        private ThingWithComps owner;
+        private Pawn owner;
 
         private int lastUsedSmoke = -99999;
     }

@@ -40,16 +40,19 @@ namespace VerbExpansionFramework
 
         public override IEnumerable<Gizmo> CompGetGizmosExtra()
         {
-            Gizmo rangedVerbGizmo;
-            if (ShouldUseSquadAttackGizmo())
+            if (AtLeastOnePawnHasRangedVerb())
             {
-                rangedVerbGizmo = CreateSquadAttackGizmo(Pawn);
+                Gizmo rangedVerbGizmo;
+                if (ShouldUseSquadAttackGizmo() && !VEF_ModCompatibilityCheck.enabled_CombatExtended)
+                {
+                    rangedVerbGizmo = CreateSquadAttackGizmo(Pawn);
+                }
+                else
+                {
+                    rangedVerbGizmo = CreateVerbTargetCommand(CurRangedVerb);
+                }
+                yield return rangedVerbGizmo;
             }
-            else
-            {
-                rangedVerbGizmo = CreateVerbTargetCommand(CurRangedVerb);
-            }
-            yield return rangedVerbGizmo;
         }
 
         private Command_VerbTarget CreateVerbTargetCommand(Verb verb)
@@ -62,7 +65,7 @@ namespace VerbExpansionFramework
                 order = +1f,
                 verb = verb
             };
-            if (verb != null)
+            if (verb != null && verb.IsStillUsableBy(Pawn))
             {
                 if (verb.caster.Faction != Faction.OfPlayer)
                 {
@@ -89,47 +92,52 @@ namespace VerbExpansionFramework
                     {
                         this.visible = true;
                     }
-                }
 
-                //Description, Icon and Label Conditions
-                Texture2D tempIcon = BaseContent.BadTex;
-                if (CurRangedVerb.EquipmentSource != null)
-                {
-                    if (VEF_ModCompatibilityCheck.rooloDualWield && CurRangedVerb.EquipmentSource == Pawn.equipment.Primary && VEF_ReflectedMethods.TryGetOffHandEquipment(Pawn.equipment, out ThingWithComps offHandEquipment))
+                    //Description, Icon and Label Conditions
+                    Texture2D tempIcon = BaseContent.BadTex;
+                    if (CurRangedVerb.EquipmentSource != null)
                     {
-                        command_VerbTarget.defaultDesc = (verb.verbProps.label == verb.EquipmentSource.def.label) ? verb.EquipmentSource.LabelCap + ": " + verb.EquipmentSource.DescriptionDetailed : verb.verbProps.label + " :: " + verb.EquipmentSource.LabelCap + ": " + verb.EquipmentSource.DescriptionDetailed;
-                        tempIcon = verb.EquipmentSource.def.uiIcon;
-                        if (tempIcon != BaseContent.BadTex || tempIcon != null)
+                        if (VEF_ModCompatibilityCheck.enabled_rooloDualWield && CurRangedVerb.EquipmentSource == Pawn.equipment.Primary && VEF_ReflectionData.TryGetOffHandEquipment(Pawn.equipment, out ThingWithComps offHandEquipment))
                         {
-                            command_VerbTarget.icon = tempIcon;
+                            command_VerbTarget.defaultDesc = (verb.verbProps.label == verb.EquipmentSource.def.label) ? verb.EquipmentSource.LabelCap + ": " + verb.EquipmentSource.DescriptionDetailed : verb.verbProps.label + " :: " + verb.EquipmentSource.LabelCap + ": " + verb.EquipmentSource.DescriptionDetailed;
+                            tempIcon = verb.EquipmentSource.def.uiIcon;
+                            if (tempIcon != BaseContent.BadTex || tempIcon != null)
+                            {
+                                command_VerbTarget.icon = tempIcon;
+                            }
+                        }
+                        else
+                        {
+                            command_VerbTarget.defaultDesc = (verb.verbProps.label == verb.EquipmentSource.def.label) ? verb.EquipmentSource.LabelCap + ": " + verb.EquipmentSource.def.description.CapitalizeFirst() : verb.verbProps.label + " :: " + verb.EquipmentSource.LabelCap + ": " + verb.EquipmentSource.def.description.CapitalizeFirst();
+                            tempIcon = CurRangedVerb.EquipmentSource.def.uiIcon;
+                            if (tempIcon != BaseContent.BadTex || tempIcon != null)
+                            {
+                                command_VerbTarget.icon = tempIcon;
+                            }
                         }
                     }
-                    else
+                    else if (verb.verbProps.LaunchesProjectile)
                     {
-                        command_VerbTarget.defaultDesc = (verb.verbProps.label == verb.EquipmentSource.def.label) ? verb.EquipmentSource.LabelCap + ": " + verb.EquipmentSource.def.description.CapitalizeFirst() : verb.verbProps.label + " :: " + verb.EquipmentSource.LabelCap + ": " + verb.EquipmentSource.def.description.CapitalizeFirst();
-                        tempIcon = CurRangedVerb.EquipmentSource.def.uiIcon;
+                        if (verb.HediffCompSource != null)
+                        {
+                            command_VerbTarget.defaultDesc = (verb.verbProps.label == verb.HediffSource.def.label) ? verb.HediffCompSource.Def.LabelCap + ": " + verb.HediffSource.def.description.CapitalizeFirst() : verb.verbProps.label + " :: " + verb.HediffSource.LabelCap + ": " + verb.HediffSource.def.description.CapitalizeFirst();
+                        }
+                        else
+                        {
+                            command_VerbTarget.defaultDesc = (verb.verbProps.label == verb.CasterPawn.def.label) ? "Biological weapon of " + verb.CasterPawn.def.label + ": " + verb.CasterPawn.def.description.CapitalizeFirst() : CurRangedVerb.verbProps.label.CapitalizeFirst() + " :: Biological weapon of " + verb.CasterPawn.def.label + ": " + verb.CasterPawn.def.description.CapitalizeFirst();
+                        }
+                        tempIcon = verb.GetProjectile().uiIcon;
                         if (tempIcon != BaseContent.BadTex || tempIcon != null)
                         {
                             command_VerbTarget.icon = tempIcon;
                         }
                     }
                 }
-                else if (verb.verbProps.LaunchesProjectile)
-                {
-                    if (verb.HediffCompSource != null)
-                    {
-                        command_VerbTarget.defaultDesc = (verb.verbProps.label == verb.HediffSource.def.label) ? verb.HediffCompSource.Def.LabelCap + ": " + verb.HediffSource.def.description.CapitalizeFirst() : verb.verbProps.label + " :: " + verb.HediffSource.LabelCap + ": " + verb.HediffSource.def.description.CapitalizeFirst();
-                    }
-                    else
-                    {
-                        command_VerbTarget.defaultDesc = (verb.verbProps.label == verb.CasterPawn.def.label) ? "Biological weapon of " + verb.CasterPawn.def.label + ": " + verb.CasterPawn.def.description.CapitalizeFirst() : CurRangedVerb.verbProps.label.CapitalizeFirst() + " :: Biological weapon of " + verb.CasterPawn.def.label + ": " + verb.CasterPawn.def.description.CapitalizeFirst();
-                    }
-                    tempIcon = verb.GetProjectile().uiIcon;
-                    if (tempIcon != BaseContent.BadTex || tempIcon != null)
-                    {
-                        command_VerbTarget.icon = tempIcon;
-                    }
-                }
+            }
+            else
+            {
+                this.visible = false;
+                command_VerbTarget.Disable();
             }
             return command_VerbTarget;
         }
@@ -185,7 +193,7 @@ namespace VerbExpansionFramework
             {
                 SetCurRangedVerb(null, null);
             }
-            else if (updatedAvailableVerbsList.Count == 1)
+            else if (updatedAvailableVerbsList.Count == 1 || VEF_ModCompatibilityCheck.enabled_CombatExtended)
             {
                 SetCurRangedVerb(updatedAvailableVerbsList[0].verb, target);
             }
@@ -193,31 +201,31 @@ namespace VerbExpansionFramework
             {
                 float highestScore = 0f;
                 int highestScoreIndex = -1;
-                
-                if (target == null)
-                {
-                    for (int i = 0; i < updatedAvailableVerbsList.Count; i++)
-                    {
-                        float currentScore;
 
-                        if (updatedAvailableVerbsList[i].verb.verbProps.spawnDef != null)
+                for (int i = 0; i < updatedAvailableVerbsList.Count; i++)
+                {
+                    Verb verb = updatedAvailableVerbsList[i].verb;
+                    float currentScore;
+
+                    if (target == null)
+                    {
+
+                        if (verb.verbProps.spawnDef != null)
                         {
                             currentScore = 50 + i;
                         }
                         else
                         {
-                            VerbEntry verbEntry = updatedAvailableVerbsList[i];
-                            Verb v = verbEntry.verb;
-                            ThingDef verbProjectile = v.GetProjectile();
-                            int projectileDamageAmount = (v.EquipmentCompSource == null) ? verbProjectile.projectile.GetDamageAmount(1f) : verbProjectile.projectile.GetDamageAmount(v.EquipmentCompSource.parent);
-                            List<float> accuracyList = (v.EquipmentCompSource == null) ? new List<float>() { v.verbProps.accuracyLong, v.verbProps.accuracyMedium, v.verbProps.accuracyShort, v.verbProps.accuracyTouch } : new List<float>() { v.EquipmentCompSource.parent.GetStatValue(StatDefOf.AccuracyLong), v.EquipmentCompSource.parent.GetStatValue(StatDefOf.AccuracyMedium), v.EquipmentCompSource.parent.GetStatValue(StatDefOf.AccuracyShort), v.EquipmentCompSource.parent.GetStatValue(StatDefOf.AccuracyTouch) };
+                            ThingDef verbProjectile = verb.GetProjectile();
+                            int projectileDamageAmount = (verb.EquipmentCompSource == null) ? verbProjectile.projectile.GetDamageAmount(1f) : verbProjectile.projectile.GetDamageAmount(verb.EquipmentSource);
+                            List<float> accuracyList = (verb.EquipmentCompSource == null) ? new List<float>() { verb.verbProps.accuracyLong, verb.verbProps.accuracyMedium, verb.verbProps.accuracyShort } : new List<float>() { verb.EquipmentCompSource.parent.GetStatValue(StatDefOf.AccuracyLong), verb.EquipmentCompSource.parent.GetStatValue(StatDefOf.AccuracyMedium), verb.EquipmentCompSource.parent.GetStatValue(StatDefOf.AccuracyShort) };
                             accuracyList.Sort();
                             accuracyList.Reverse();
                             float accuracyValue = (accuracyList[0] + accuracyList[1]) / 2;
-                            int burstShotCount = (v.verbProps.burstShotCount == 0) ? 1 : v.verbProps.burstShotCount;
-                            float fullCycleTime = v.verbProps.AdjustedFullCycleTime(v, this.Pawn);
+                            int burstShotCount = (verb.verbProps.burstShotCount == 0) ? 1 : verb.verbProps.burstShotCount;
+                            float fullCycleTime = verb.verbProps.AdjustedFullCycleTime(verb, this.Pawn);
 
-                            currentScore = ((accuracyValue * projectileDamageAmount * burstShotCount) / (fullCycleTime)) + v.GetProjectile().projectile.explosionRadius - (v.verbProps.forcedMissRadius / burstShotCount);
+                            currentScore = ((accuracyValue * projectileDamageAmount * burstShotCount) / (fullCycleTime)) + verbProjectile.projectile.explosionRadius - (verb.verbProps.forcedMissRadius / burstShotCount);
                         }
 
                         if (currentScore > highestScore)
@@ -226,34 +234,27 @@ namespace VerbExpansionFramework
                             highestScoreIndex = i;
                         }
                     }
-                }
-                else
-                {
-                    for (int i = 0; i < updatedAvailableVerbsList.Count; i++)
+                    else
                     {
-                        float currentScore;
-
-                        if (updatedAvailableVerbsList[i].verb.verbProps.spawnDef != null)
+                        if (verb.verbProps.spawnDef != null)
                         {
                             currentScore = 50 + i;
                         }
                         else
                         {
-                            VerbEntry verbEntry = updatedAvailableVerbsList[i];
-                            Verb v = verbEntry.verb;
-                            ThingDef verbProjectile = v.GetProjectile();
-                            int projectileDamageAmount = (v.EquipmentCompSource == null) ? verbProjectile.projectile.GetDamageAmount(1f) : verbProjectile.projectile.GetDamageAmount(v.EquipmentCompSource.parent);
-                            float accuracyValue = Verse.ShotReport.HitReportFor(Pawn, v, target).TotalEstimatedHitChance;
-                            int burstShotCount = (v.verbProps.burstShotCount == 0) ? 1 : v.verbProps.burstShotCount;
-                            float fullCycleTime = v.verbProps.AdjustedFullCycleTime(v, this.Pawn);
+                            ThingDef verbProjectile = verb.GetProjectile();
+                            int projectileDamageAmount = (verb.EquipmentCompSource == null) ? verbProjectile.projectile.GetDamageAmount(1f) : verbProjectile.projectile.GetDamageAmount(verb.EquipmentSource);
+                            float accuracyValue = Verse.ShotReport.HitReportFor(Pawn, verb, target).TotalEstimatedHitChance;
+                            int burstShotCount = (verb.verbProps.burstShotCount == 0) ? 1 : verb.verbProps.burstShotCount;
+                            float fullCycleTime = verb.verbProps.AdjustedFullCycleTime(verb, this.Pawn);
 
-                            currentScore = ((accuracyValue * projectileDamageAmount * burstShotCount) / (fullCycleTime)) + v.GetProjectile().projectile.explosionRadius - (v.verbProps.forcedMissRadius / burstShotCount);
-                            if (target != null && v.IsIncendiary() && target.CanEverAttachFire() && !target.IsBurning())
+                            currentScore = ((accuracyValue * projectileDamageAmount * burstShotCount) / (fullCycleTime)) + verbProjectile.projectile.explosionRadius - (verb.verbProps.forcedMissRadius / burstShotCount);
+                            if (verb.IsIncendiary() && target.CanEverAttachFire() && !target.IsBurning())
                             {
                                 currentScore += 10;
                             }
                             Pawn targetPawn = target as Pawn;
-                            if (targetPawn != null && v.IsEMP() && !targetPawn.RaceProps.IsFlesh)
+                            if (targetPawn != null && verb.IsEMP() && !targetPawn.RaceProps.IsFlesh)
                             {
                                 currentScore += 10;
                             }
@@ -302,10 +303,9 @@ namespace VerbExpansionFramework
                         {
                             for (int k = 0; k < allEquipmentVerbs.Count; k++)
                             {
-                                if (VEF_ModCompatibilityCheck.rooloDualWield)
+                                if (VEF_ModCompatibilityCheck.enabled_rooloDualWield)
                                 {
-                                    ThingWithComps offHandEquipment;
-                                    VEF_ReflectedMethods.TryGetOffHandEquipment(Pawn.equipment, out offHandEquipment);
+                                    VEF_ReflectionData.TryGetOffHandEquipment(Pawn.equipment, out ThingWithComps offHandEquipment);
                                     if (offHandEquipment != null)
                                     {
                                         if (!allEquipmentVerbs[k].IsMeleeAttack && allEquipmentVerbs[k].EquipmentSource != offHandEquipment && allEquipmentVerbs[k].IsStillUsableBy(this.Pawn))
@@ -322,6 +322,16 @@ namespace VerbExpansionFramework
                                     }
 
                                 }
+                                else if (VEF_ModCompatibilityCheck.enabled_CombatExtended && !Type.Equals(allEquipmentVerbs[k].verbProps.GetType(), typeof(Verse.VerbProperties)))
+                                {
+                                    if (!allEquipmentVerbs[k].IsMeleeAttack && allEquipmentVerbs[k].IsStillUsableBy(this.Pawn))
+                                    {
+                                        if (allEquipmentVerbs[k].EquipmentSource.AllComps.FirstOrDefault(c => VEF_ReflectionData.T_CombatExtended_CompAmmoUser.IsAssignableFrom(c.GetType())) == null || ((bool)VEF_ReflectionData.PG_CE_CompAmmoUser_CanBeFiredNow.Invoke(allEquipmentVerbs[k].EquipmentSource.AllComps.FirstOrDefault(c => VEF_ReflectionData.T_CombatExtended_CompAmmoUser.IsAssignableFrom(c.GetType())), new object[] { })))
+                                        {
+                                            this.rangedVerbs.Add(new VerbEntry(allEquipmentVerbs[k], this.Pawn));
+                                        }
+                                    }
+                                }
                                 else
                                 {
                                     if (!allEquipmentVerbs[k].IsMeleeAttack && allEquipmentVerbs[k].IsStillUsableBy(this.Pawn))
@@ -334,14 +344,17 @@ namespace VerbExpansionFramework
                     }
                 }
             }
-            foreach (Verb verb in this.Pawn.health.hediffSet.GetHediffsVerbs())
+            if (!VEF_ModCompatibilityCheck.enabled_CombatExtended)
             {
-                if (!verb.IsMeleeAttack && verb.IsStillUsableBy(this.Pawn))
+                foreach (Verb verb in this.Pawn.health.hediffSet.GetHediffsVerbs())
                 {
-                    this.rangedVerbs.Add(new VerbEntry(verb, this.Pawn));
+                    if (!verb.IsMeleeAttack && verb.IsStillUsableBy(this.Pawn))
+                    {
+                        this.rangedVerbs.Add(new VerbEntry(verb, this.Pawn));
+                    }
                 }
+                return;
             }
-            return;
         }
 
         public static bool ShouldUseSquadAttackGizmo()
@@ -349,8 +362,31 @@ namespace VerbExpansionFramework
             return AtLeastOneSelectedColonistHasOtherRangedVerb() && AtLeastTwoSelectedColonistsHaveDifferentRangedVerbs();
         }
 
+        private static bool AtLeastOnePawnHasRangedVerb()
+        {
+            {
+                List<object> selectedObjectsListForReading = Find.Selector.SelectedObjectsListForReading;
+                for (int i = 0; i < selectedObjectsListForReading.Count; i++)
+                {
+                    Pawn pawn = selectedObjectsListForReading[i] as Pawn;
+                    if (pawn != null && pawn.IsColonistPlayerControlled && !pawn.story.WorkTagIsDisabled(WorkTags.Violent))
+                    {
+                        if (pawn.GetComp<VEF_Comp_Pawn_RangedVerbs>().CurRangedVerb != null && pawn.GetComp<VEF_Comp_Pawn_RangedVerbs>().CurRangedVerb.IsStillUsableBy(pawn))
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
         private static bool AtLeastOneSelectedColonistHasOtherRangedVerb()
         {
+            if (Find.Selector.NumSelected <= 1)
+            {
+                return false;
+            }
             List<object> selectedObjectsListForReading = Find.Selector.SelectedObjectsListForReading;
             for (int i = 0; i < selectedObjectsListForReading.Count; i++)
             {
@@ -394,7 +430,7 @@ namespace VerbExpansionFramework
                         verbDef = verbDef2;
                         flag = true;
                     }
-                    else if (verbDef2 != verbDef)
+                    else if (verbDef2 != null && (verbDef2 != verbDef))
                     {
                         return true;
                     }

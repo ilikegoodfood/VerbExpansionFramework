@@ -40,18 +40,26 @@ namespace VerbExpansionFramework
             harmony.Patch(original: AccessTools.Method(type: typeof(HealthCardUtility), name: "GenerateSurgeryOption"), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(HealthCardUtility_GenerateSurgeryOptionPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(HediffSet), name: "CalculateBleedRate"), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(HediffSet_CalculateBleedRatePostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(JobDriver_Wait), name: "CheckForAutoAttack"), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(JobDriver_Wait_CheckForAutoAttackPostfix)));
-            harmony.Patch(original: AccessTools.Method(type: typeof(PawnAttackGizmoUtility), name: "GetSquadAttackGizmo"), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(PawnAttackGizmoUtility_GetSquadAttackGizmoPostfix)));
+            if (!VEF_ModCompatibilityCheck.enabled_CombatExtended)
+            {
+                harmony.Patch(original: AccessTools.Method(type: typeof(Pawn), name: nameof(Pawn.TryGetAttackVerb)), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(Pawn_TryGetAttackVerbPostfix)));
+                harmony.Patch(original: AccessTools.Method(type: typeof(PawnAttackGizmoUtility), name: "GetSquadAttackGizmo"), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(PawnAttackGizmoUtility_GetSquadAttackGizmoPostfix)));
+            }
             harmony.Patch(original: MB_Pawn_DraftController_GetGizmo(), prefix: null, postfix: null, transpiler: new HarmonyMethod(type: patchType, name: nameof(Pawn_DraftController_GetGizmosTranspiler)));
-            harmony.Patch(original: AccessTools.Method(type: typeof(Pawn), name: nameof(Pawn.TryGetAttackVerb)), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(Pawn_TryGetAttackVerbPostfix)));
+            harmony.Patch(original: AccessTools.Method(type: typeof(Pawn_HealthTracker), name: nameof(Pawn_HealthTracker.PreApplyDamage)), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(Pawn_HealthTracker_PreApplyDamagePostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(SmokepopBelt), name: nameof(SmokepopBelt.CheckPreAbsorbDamage)), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(SmokepopBelt_CheckPreAbsorbDamagePostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(ThoughtWorker_IsCarryingRangedWeapon), name: "CurrentStateInternal"), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(ThoughtWorker_IsCarryingRangedWeapon_CurrentStateInternalPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(Verb_ShootOneUse), name: "SelfConsume"), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(Verb_ShootOneUse_SelfConsume)));
 
             // Harmony Patches for Mod Compatibility
-            if (VEF_ModCompatibilityCheck.rooloDualWield)
+            if (VEF_ModCompatibilityCheck.enabled_rooloDualWield)
             {
                 // Dual Wield
                 harmony.Patch(original: AccessTools.Method(type: GenTypes.GetTypeInAnyAssemblyNew("DualWield.Ext_Verb", "DualWield"), name: "OffhandTryStartCastOn"), prefix: new HarmonyMethod(type: patchType, name: nameof(DualWield_Ext_Verb_OffhandTryStartCastOn)), postfix: null);
+            }
+
+            if (VEF_ModCompatibilityCheck.enabled_RangeAnimalFramework)
+            {
                 //Range Animal Framework
                 harmony.Patch(original: AccessTools.Method(type: GenTypes.GetTypeInAnyAssemblyNew("AnimalRangeAttack.ARA_FightAI_Patch", "AnimalRangeAttack"), name: "Prefix"), prefix: null, postfix: null, transpiler: new HarmonyMethod(type: patchType, name: nameof(PrefixSlayerTranspiler)));
                 harmony.Patch(original: AccessTools.Method(type: GenTypes.GetTypeInAnyAssemblyNew("AnimalRangeAttack.ARA_ManHunter_Patch", "AnimalRangeAttack"), name: "Prefix"), prefix: null, postfix: null, transpiler: new HarmonyMethod(type: patchType, name: nameof(PrefixSlayerTranspiler)));
@@ -139,11 +147,16 @@ namespace VerbExpansionFramework
 
                 if (usedVerb == null)
                 {
-                    usedVerb = pawn.GetComp<VEF_Comp_Pawn_RangedVerbs>().TryGetRangedVerb(pawn.mindState.enemyTarget);
+                    usedVerb = pawn.GetComp<VEF_Comp_Pawn_RangedVerbs>().TryGetRangedVerb((pawn.mindState == null) ? null: pawn.mindState.enemyTarget) ;
                 }
-
                 if (usedVerb == null)
                 {
+                    ThingDef tempThingDef = new ThingDef() { defName = "tempThingDef :: " + pawn.Label, label = "VerbError".Translate(), thingClass = typeof(ThingWithComps), category = ThingCategory.Item };
+
+                    MI_GiveShortHash.Invoke(null, new object[] { tempThingDef, tempThingDef.GetType() });
+                    // Traverse.Create(tempThingDef).Field("verbs").SetValue(new List<VerbProperties>() { usedVerb.verbProps });
+
+                    weaponDef = tempThingDef;
                     return;
                 }
                 else if (pawn.equipment != null && pawn.equipment.Primary != null && usedVerb.EquipmentSource != null && usedVerb.EquipmentSource.def == pawn.equipment.Primary.def)
@@ -256,6 +269,17 @@ namespace VerbExpansionFramework
             return;
         }
 
+        [HarmonyPriority(1200)]
+        private static void Pawn_TryGetAttackVerbPostfix(Pawn __instance, ref Verb __result, ref Thing target)
+        {
+            Verb tempVerb = __instance.GetComp<VEF_Comp_Pawn_RangedVerbs>().TryGetRangedVerb(target);
+            if (tempVerb != null)
+            {
+                __result = tempVerb;
+            }
+            return;
+        }
+
         private static void PawnAttackGizmoUtility_GetSquadAttackGizmoPostfix(Pawn pawn, ref Gizmo __result)
         {
             Command_Target command_Target = (Command_Target)__result;
@@ -266,7 +290,7 @@ namespace VerbExpansionFramework
                 for (int i = 0; i < selectedObjectsListForReading.Count; i++)
                 {
                     Pawn pawn2 = selectedObjectsListForReading[i] as Pawn;
-                    if (pawn2 != null && pawn2.IsColonistPlayerControlled && (pawn2.GetComp<VEF_Comp_Pawn_RangedVerbs>().CurRangedVerb.EquipmentSource == null || pawn2.GetComp<VEF_Comp_Pawn_RangedVerbs>().CurRangedVerb.EquipmentSource.def != pawn2.equipment.Primary.def))
+                    if (pawn2 != null && pawn2.IsColonistPlayerControlled && pawn2.GetComp<VEF_Comp_Pawn_RangedVerbs>().CurRangedVerb != null && pawn2.GetComp<VEF_Comp_Pawn_RangedVerbs>().CurRangedVerb.IsStillUsableBy(pawn2) && (pawn2.GetComp<VEF_Comp_Pawn_RangedVerbs>().CurRangedVerb.EquipmentSource == null || pawn2.GetComp<VEF_Comp_Pawn_RangedVerbs>().CurRangedVerb.EquipmentSource != pawn2.equipment.Primary))
                     {
                         flag = true;
                     }
@@ -276,8 +300,7 @@ namespace VerbExpansionFramework
             {
                 command_Target.defaultLabel = "CommandSquadEquipmentAttack".Translate();
                 command_Target.defaultDesc = "CommandSquadEquipmentAttackDesc".Translate();
-                string str;
-                if (FloatMenuUtility.GetAttackAction(pawn, LocalTargetInfo.Invalid, out str) == null)
+                if (FloatMenuUtility.GetAttackAction(pawn, LocalTargetInfo.Invalid, out string str) == null)
                 {
                     command_Target.Disable(str.CapitalizeFirst() + ".");
                 }
@@ -290,7 +313,7 @@ namespace VerbExpansionFramework
                     }).Cast<Pawn>();
                     foreach (Pawn pawn2 in pawns)
                     {
-                        if (pawn2.equipment.Primary != null && pawn2.GetComp<VEF_Comp_Pawn_RangedVerbs>().CurRangedVerb.EquipmentSource.def != pawn2.equipment.Primary.def)
+                        if (pawn2.equipment != null && pawn2.equipment.Primary != null && pawn2.GetComp<VEF_Comp_Pawn_RangedVerbs>().CurRangedVerb.EquipmentSource.def != pawn2.equipment.Primary.def)
                         {
                             pawn2.GetComp<VEF_Comp_Pawn_RangedVerbs>().SetCurRangedVerb(pawn2.equipment.PrimaryEq.PrimaryVerb, null);
                         }
@@ -359,13 +382,16 @@ namespace VerbExpansionFramework
             }
         }
 
-        [HarmonyPriority(1200)]
-        private static void Pawn_TryGetAttackVerbPostfix(Pawn __instance, ref Verb __result, ref Thing target)
+
+        private static void Pawn_HealthTracker_PreApplyDamagePostfix(Pawn_HealthTracker __instance, DamageInfo dinfo)
         {
-            Verb tempVerb = __instance.GetComp<VEF_Comp_Pawn_RangedVerbs>().TryGetRangedVerb(target);
-            if (tempVerb != null)
+            if(dinfo.Instigator != null)
             {
-                __result = tempVerb;
+                Pawn pawn = (Pawn)VEF_ReflectionData.FI_Pawn_HealthTracker_pawn.GetValue(__instance);
+                foreach (Hediff hediff in pawn.health.hediffSet.hediffs.FindAll(h => h.TryGetComp<VEF_HediffComp_SmokepopDefense>() != null))
+                {
+                    hediff.TryGetComp<VEF_HediffComp_SmokepopDefense>().TryTriggerSmokepopDefense(dinfo);
+                }
             }
             return;
         }
@@ -374,7 +400,7 @@ namespace VerbExpansionFramework
         {
             if (!dinfo.Def.isExplosive && dinfo.Def.harmsHealth && dinfo.Def.ExternalViolenceFor(__instance))
             {
-                if (dinfo.Instigator is Pawn instigatorPawn && instigatorPawn.GetComp<VEF_Comp_Pawn_RangedVerbs>().CurRangedVerb != null && !(dinfo.Weapon != null && instigatorPawn.GetComp<VEF_Comp_Pawn_RangedVerbs>().CurRangedVerb.EquipmentSource != null && dinfo.Weapon == instigatorPawn.GetComp<VEF_Comp_Pawn_RangedVerbs>().CurRangedVerb.EquipmentSource.def) && !instigatorPawn.GetComp<VEF_Comp_Pawn_RangedVerbs>().CurRangedVerb.IsMeleeAttack)
+                if (dinfo.Instigator is Pawn instigatorPawn && instigatorPawn.GetComp<VEF_Comp_Pawn_RangedVerbs>().CurRangedVerb != null && !(dinfo.Weapon != null && instigatorPawn.GetComp<VEF_Comp_Pawn_RangedVerbs>().CurRangedVerb.EquipmentSource != null && dinfo.Weapon == instigatorPawn.GetComp<VEF_Comp_Pawn_RangedVerbs>().CurRangedVerb.EquipmentSource.def) && instigatorPawn.Position.DistanceTo(__instance.Wearer.Position) > 3f)
                 {
                     IntVec3 position = __instance.Wearer.Position;
                     Map map = __instance.Wearer.Map;
@@ -416,6 +442,7 @@ namespace VerbExpansionFramework
         }
 
         // Harmony Patches for Mod Compatibility
+        // Diual Wield
         private static bool DualWield_Ext_Verb_OffhandTryStartCastOn(Verb instance)
         {
             if (instance.EquipmentSource == null || instance.EquipmentSource.def != instance.CasterPawn.equipment.Primary.def)
@@ -428,6 +455,7 @@ namespace VerbExpansionFramework
             }
         }
 
+        // Range Animal Framework
         private IEnumerable<CodeInstruction> PrefixSlayerTranspiler(IEnumerable<CodeInstruction> codeInstructions)
         {
             yield return new CodeInstruction(opcode: OpCodes.Ldc_I4_1);
