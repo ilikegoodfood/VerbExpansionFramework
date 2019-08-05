@@ -456,7 +456,7 @@ namespace VerbExpansionFramework
         }
 
         // Range Animal Framework
-        private IEnumerable<CodeInstruction> PrefixSlayerTranspiler(IEnumerable<CodeInstruction> codeInstructions)
+        private static IEnumerable<CodeInstruction> PrefixSlayerTranspiler(IEnumerable<CodeInstruction> codeInstructions)
         {
             yield return new CodeInstruction(opcode: OpCodes.Ldc_I4_1);
             yield return new CodeInstruction(opcode: OpCodes.Ret);
