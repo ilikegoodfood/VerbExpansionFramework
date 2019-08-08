@@ -1,0 +1,6 @@
+D:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\Verb Expansion Framework (1.0)\Source\Verb Expansion Framwork\bin\Release\VerbExpansionFramework.dll
+D:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\Verb Expansion Framework (1.0)\Source\Verb Expansion Framwork\bin\Release\VerbExpansionFramework.pdb
+D:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\Verb Expansion Framework (1.0)\Source\Verb Expansion Framwork\obj\Release\VerbExpansionFramework.csprojAssemblyReference.cache
+D:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\Verb Expansion Framework (1.0)\Source\Verb Expansion Framwork\obj\Release\VerbExpansionFramework.csproj.CoreCompileInputs.cache
+D:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\Verb Expansion Framework (1.0)\Source\Verb Expansion Framwork\obj\Release\VerbExpansionFramework.dll
+D:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\Verb Expansion Framework (1.0)\Source\Verb Expansion Framwork\obj\Release\VerbExpansionFramework.pdb

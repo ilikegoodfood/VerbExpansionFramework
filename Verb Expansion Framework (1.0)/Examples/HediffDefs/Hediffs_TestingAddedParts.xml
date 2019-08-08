@@ -33,5 +33,21 @@
 		</addedPartProps>
 		<spawnThingOnRemoved>TestBodyMountedCannon</spawnThingOnRemoved>
     </HediffDef>
-
+	
+	<HediffDef ParentName="AddedBodyPartBase">
+		<defName>TestSmokeGenerator</defName>
+		<label>test smoke generator</label>
+		<labelNoun>an implantible smoke generator for personal defense</labelNoun>
+		<defaultLabelColor>(0.65, 0.3, 0.9)</defaultLabelColor>
+		<comps>
+			<li Class="VerbExpansionFramework.VEF_HediffCompProperties_SmokepopDefense">
+				<rechargeTime>13</rechargeTime>
+				<smokeRadius>4</smokeRadius>
+			</li>
+		</comps>
+		<addedPartProps>
+			<solid>true</solid>
+			<partEfficiency>0.9</partEfficiency>
+		</addedPartProps>
+	</HediffDef>
 </Defs>

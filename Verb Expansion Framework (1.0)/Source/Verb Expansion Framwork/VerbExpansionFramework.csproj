@@ -40,6 +40,18 @@
       <HintPath>..\..\..\..\RimWorldWin64_Data\Managed\Assembly-CSharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="CombatExtended">
+      <HintPath>..\..\..\CombatExtended (v1.0.1.5)\Assemblies\CombatExtended.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="DualWield">
+      <HintPath>..\..\..\..\..\..\workshop\content\294100\1628211313\Assemblies\DualWield.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="SmokepopCompFramework">
+      <HintPath>..\..\..\Smokepop Defense Framework (1.0)\Assemblies\SmokepopCompFramework.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -48,6 +60,10 @@
     <Reference Include="System.Xml" />
     <Reference Include="UnityEngine">
       <HintPath>..\..\..\..\RimWorldWin64_Data\Managed\UnityEngine.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="VariableHealthFramework">
+      <HintPath>..\..\..\Variable Health Framework (1.0)\Assemblies\VariableHealthFramework.dll</HintPath>
       <Private>False</Private>
     </Reference>
   </ItemGroup>
@@ -65,6 +81,8 @@
     <Compile Include="VEF_Gizmo_SwitchRangedVerb.cs" />
     <Compile Include="Comps\VEF_ThingComp_SmokepopDefense.cs" />
     <Compile Include="ReflectionTools\VEF_ReflectionData.cs" />
+    <Compile Include="Comps\VEF_HediffCompProperties_HealthModifier.cs" />
+    <Compile Include="Comps\VEF_HediffComp_HealthModifier.cs" />
     <None Include="OldCode\VEF_AttackTargetFinder.cs" />
     <Compile Include="VEF_JobGiver_ManhunterRanged.cs" />
     <Compile Include="HarmonyPatches.cs" />

@@ -44,20 +44,30 @@ namespace VerbExpansionFramework
             GizmoResult result = base.GizmoOnGUI(topLeft, maxWidth);
             if (VEF_ModCompatibilityCheck.enabled_rooloDualWield && verb.EquipmentSource != null && verb.EquipmentSource.def == pawn.equipment.Primary.def && !VEF_Comp_Pawn_RangedVerbs.ShouldUseSquadAttackGizmo())
             {
-                VEF_ReflectionData.TryGetOffHandEquipment(this.pawn.equipment, out ThingWithComps offHandThing);
-                if (offHandThing != null)
+                try
                 {
-                    GUI.color = offHandThing.DrawColor;
-                    Material mat = (!this.disabled) ? null : TexUI.GrayscaleGUI;
-                    Texture2D texture2D = offHandThing.def.uiIcon;
-                    bool flag = texture2D == null;
-                    if (flag)
+                    ((Action)(() =>
                     {
-                        texture2D = BaseContent.BadTex;
-                    }
-                    Rect outerRect = new Rect(topLeft.x, topLeft.y + 10f, this.GetWidth(maxWidth), 75f);
-                    Widgets.DrawTextureFitted(outerRect, texture2D, this.iconDrawScale * 0.85f, this.iconProportions, this.iconTexCoords, this.iconAngle, mat);
-                    GUI.color = Color.white;
+                        ThingWithComps offHandThing = DualWield.Ext_Pawn.TryGetOffhandAttackVerb(this.pawn, this.pawn.mindState.enemyTarget, !this.pawn.IsColonist).EquipmentSource;
+                        if (offHandThing != null)
+                        {
+                            GUI.color = offHandThing.DrawColor;
+                            Material mat = (!this.disabled) ? null : TexUI.GrayscaleGUI;
+                            Texture2D texture2D = offHandThing.def.uiIcon;
+                            bool flag = texture2D == null;
+                            if (flag)
+                            {
+                                texture2D = BaseContent.BadTex;
+                            }
+                            Rect outerRect = new Rect(topLeft.x, topLeft.y + 10f, this.GetWidth(maxWidth), 75f);
+                            Widgets.DrawTextureFitted(outerRect, texture2D, this.iconDrawScale * 0.85f, this.iconProportions, this.iconTexCoords, this.iconAngle, mat);
+                            GUI.color = Color.white;
+                        }
+                    }))();
+                }
+                catch (TypeLoadException ex)
+                {
+
                 }
             }
             return result;

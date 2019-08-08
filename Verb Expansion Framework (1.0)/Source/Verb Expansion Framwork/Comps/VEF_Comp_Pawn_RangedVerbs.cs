@@ -97,13 +97,26 @@ namespace VerbExpansionFramework
                     Texture2D tempIcon = BaseContent.BadTex;
                     if (CurRangedVerb.EquipmentSource != null)
                     {
-                        if (VEF_ModCompatibilityCheck.enabled_rooloDualWield && CurRangedVerb.EquipmentSource == Pawn.equipment.Primary && VEF_ReflectionData.TryGetOffHandEquipment(Pawn.equipment, out ThingWithComps offHandEquipment))
+                        if (VEF_ModCompatibilityCheck.enabled_rooloDualWield)
                         {
-                            command_VerbTarget.defaultDesc = (verb.verbProps.label == verb.EquipmentSource.def.label) ? verb.EquipmentSource.LabelCap + ": " + verb.EquipmentSource.DescriptionDetailed : verb.verbProps.label + " :: " + verb.EquipmentSource.LabelCap + ": " + verb.EquipmentSource.DescriptionDetailed;
-                            tempIcon = verb.EquipmentSource.def.uiIcon;
-                            if (tempIcon != BaseContent.BadTex || tempIcon != null)
+                            try
                             {
-                                command_VerbTarget.icon = tempIcon;
+                                ((Action)(() =>
+                                {
+                                    if (CurRangedVerb.EquipmentSource == Pawn.equipment.Primary && DualWield.Ext_Pawn.TryGetOffhandAttackVerb(Pawn, Pawn.mindState.enemyTarget, !Pawn.IsColonist) != null)
+                                    {
+                                        command_VerbTarget.defaultDesc = (verb.verbProps.label == verb.EquipmentSource.def.label) ? verb.EquipmentSource.LabelCap + ": " + verb.EquipmentSource.DescriptionDetailed : verb.verbProps.label + " :: " + verb.EquipmentSource.LabelCap + ": " + verb.EquipmentSource.DescriptionDetailed;
+                                        tempIcon = verb.EquipmentSource.def.uiIcon;
+                                        if (tempIcon != BaseContent.BadTex || tempIcon != null)
+                                        {
+                                            command_VerbTarget.icon = tempIcon;
+                                        }
+                                    }
+                                }))();
+                            }
+                            catch (TypeLoadException ex)
+                            {
+
                             }
                         }
                         else
@@ -305,31 +318,47 @@ namespace VerbExpansionFramework
                             {
                                 if (VEF_ModCompatibilityCheck.enabled_rooloDualWield)
                                 {
-                                    VEF_ReflectionData.TryGetOffHandEquipment(Pawn.equipment, out ThingWithComps offHandEquipment);
-                                    if (offHandEquipment != null)
+                                    try
                                     {
-                                        if (!allEquipmentVerbs[k].IsMeleeAttack && allEquipmentVerbs[k].EquipmentSource != offHandEquipment && allEquipmentVerbs[k].IsStillUsableBy(this.Pawn))
+                                        ((Action)(() =>
                                         {
-                                            this.rangedVerbs.Add(new VerbEntry(allEquipmentVerbs[k], this.Pawn));
-                                        }
+                                            ThingWithComps offHandEquipment = DualWield.Ext_Pawn.TryGetOffhandAttackVerb(Pawn, Pawn.mindState.enemyTarget, !Pawn.IsColonist).EquipmentSource;
+                                            if (offHandEquipment != null)
+                                            {
+                                                if (!allEquipmentVerbs[k].IsMeleeAttack && allEquipmentVerbs[k].EquipmentSource != offHandEquipment && allEquipmentVerbs[k].IsStillUsableBy(this.Pawn))
+                                                {
+                                                    this.rangedVerbs.Add(new VerbEntry(allEquipmentVerbs[k], this.Pawn));
+                                                }
+                                            }
+                                            else
+                                            {
+                                                if (!allEquipmentVerbs[k].IsMeleeAttack && allEquipmentVerbs[k].IsStillUsableBy(this.Pawn))
+                                                {
+                                                    this.rangedVerbs.Add(new VerbEntry(allEquipmentVerbs[k], this.Pawn));
+                                                }
+                                            }
+                                        }))();
                                     }
-                                    else
+                                    catch (TypeLoadException ex)
                                     {
-                                        if (!allEquipmentVerbs[k].IsMeleeAttack && allEquipmentVerbs[k].IsStillUsableBy(this.Pawn))
-                                        {
-                                            this.rangedVerbs.Add(new VerbEntry(allEquipmentVerbs[k], this.Pawn));
-                                        }
-                                    }
 
+                                    }
                                 }
-                                else if (VEF_ModCompatibilityCheck.enabled_CombatExtended && !Type.Equals(allEquipmentVerbs[k].verbProps.GetType(), typeof(Verse.VerbProperties)))
+                                else if (VEF_ModCompatibilityCheck.enabled_CombatExtended)
                                 {
-                                    if (!allEquipmentVerbs[k].IsMeleeAttack && allEquipmentVerbs[k].IsStillUsableBy(this.Pawn))
+                                    try
                                     {
-                                        if (allEquipmentVerbs[k].EquipmentSource.AllComps.FirstOrDefault(c => VEF_ReflectionData.T_CombatExtended_CompAmmoUser.IsAssignableFrom(c.GetType())) == null || ((bool)VEF_ReflectionData.PG_CE_CompAmmoUser_CanBeFiredNow.Invoke(allEquipmentVerbs[k].EquipmentSource.AllComps.FirstOrDefault(c => VEF_ReflectionData.T_CombatExtended_CompAmmoUser.IsAssignableFrom(c.GetType())), new object[] { })))
+                                        ((Action)(() =>
                                         {
-                                            this.rangedVerbs.Add(new VerbEntry(allEquipmentVerbs[k], this.Pawn));
-                                        }
+                                            if (allEquipmentVerbs[k].verbProps.GetType().Equals(typeof(CombatExtended.VerbPropertiesCE)) && !allEquipmentVerbs[k].IsMeleeAttack && allEquipmentVerbs[k].IsStillUsableBy(this.Pawn) && allEquipmentVerbs[k].EquipmentSource.TryGetComp<CombatExtended.CompAmmoUser>() == null || allEquipmentVerbs[k].EquipmentSource.TryGetComp<CombatExtended.CompAmmoUser>().CanBeFiredNow)
+                                            {
+                                                this.rangedVerbs.Add(new VerbEntry(allEquipmentVerbs[k], this.Pawn));
+                                            }
+                                        }))();
+                                    }
+                                    catch (TypeLoadException ex)
+                                    {
+
                                     }
                                 }
                                 else

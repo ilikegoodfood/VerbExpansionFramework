@@ -38,6 +38,7 @@ namespace VerbExpansionFramework
             harmony.Patch(original: AccessTools.Method(type: typeof(Command_VerbTarget), name: nameof(Command_VerbTarget.ProcessInput)), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(Command_VerbTarget_ProcessInputPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(FloatMenuUtility), name: nameof(FloatMenuUtility.GetAttackAction)), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(FloatMenuUtility_GetAttackActionPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(HealthCardUtility), name: "GenerateSurgeryOption"), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(HealthCardUtility_GenerateSurgeryOptionPostfix)));
+            harmony.Patch(original: AccessTools.Property(type: typeof(Pawn), name: nameof(Pawn.HealthScale)).GetGetMethod(true), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(Pawn_GetHealthScalePostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(HediffSet), name: "CalculateBleedRate"), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(HediffSet_CalculateBleedRatePostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(JobDriver_Wait), name: "CheckForAutoAttack"), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(JobDriver_Wait_CheckForAutoAttackPostfix)));
             if (!VEF_ModCompatibilityCheck.enabled_CombatExtended)
@@ -235,6 +236,43 @@ namespace VerbExpansionFramework
             return;
         }
 
+        private static void Pawn_GetHealthScalePostfix(Pawn __instance, ref float __result)
+        {
+            float healthScaleOffset = 0f;
+            float healthScaleFactor = 1f;
+
+            foreach (Hediff hediff in __instance.health.hediffSet.hediffs)
+            {
+                if (hediff.TryGetComp<VEF_HediffComp_HealthModifier>() != null)
+                {
+                    healthScaleOffset += hediff.TryGetComp<VEF_HediffComp_HealthModifier>().Props.healthScaleOffset;
+                    healthScaleFactor += hediff.TryGetComp<VEF_HediffComp_HealthModifier>().Props.healthScaleFactorOffset;
+                }
+
+                if (VEF_ModCompatibilityCheck.enabled_VariableHealthFramework)
+                {
+                    try
+                    {
+                        ((Action)(() =>
+                        {
+                            if (hediff.TryGetComp<VariableHealthFramework.VHF_HediffComp_HealthModifier>() != null)
+                            {
+                                healthScaleOffset += hediff.TryGetComp<VariableHealthFramework.VHF_HediffComp_HealthModifier>().Props.healthScaleOffset;
+                                healthScaleFactor += hediff.TryGetComp<VariableHealthFramework.VHF_HediffComp_HealthModifier>().Props.healthScaleFactorOffset;
+                            }
+                        }))();
+                    }
+                    catch (TypeLoadException ex)
+                    {
+
+                    }
+                }
+            }
+
+            __result = (__result + healthScaleOffset) * healthScaleFactor;
+            return;
+        }
+
         private static void HediffSet_CalculateBleedRatePostfix(HediffSet __instance, ref float __result)
         {
             __result *= __instance.pawn.health.capacities.GetLevel(VEF_DefOf.BleedRate);
@@ -388,9 +426,30 @@ namespace VerbExpansionFramework
             if(dinfo.Instigator != null)
             {
                 Pawn pawn = (Pawn)VEF_ReflectionData.FI_Pawn_HealthTracker_pawn.GetValue(__instance);
-                foreach (Hediff hediff in pawn.health.hediffSet.hediffs.FindAll(h => h.TryGetComp<VEF_HediffComp_SmokepopDefense>() != null))
+                List<Hediff> hediffs = pawn.health.hediffSet.hediffs;
+                for (int i = 0; i < hediffs.Count; i++)
                 {
-                    hediff.TryGetComp<VEF_HediffComp_SmokepopDefense>().TryTriggerSmokepopDefense(dinfo);
+                    if (hediffs[i].TryGetComp<VEF_HediffComp_SmokepopDefense>() != null)
+                    {
+                        hediffs[i].TryGetComp<VEF_HediffComp_SmokepopDefense>().TryTriggerSmokepopDefense(dinfo);
+                    }
+                    if (VEF_ModCompatibilityCheck.enabled_SmokepopDefenseFramework)
+                    {
+                        try
+                        {
+                            ((Action)(() =>
+                            {
+                                if (hediffs[i].TryGetComp<SmokepopCompFramework.SCF_HediffComp_SmokepopDefense>() != null)
+                                {
+                                    hediffs[i].TryGetComp<SmokepopCompFramework.SCF_HediffComp_SmokepopDefense>().TryTriggerSmokepopDefense(dinfo);
+                                }
+                            }))();
+                        }
+                        catch (TypeLoadException ex)
+                        {
+
+                        }
+                    }
                 }
             }
             return;
@@ -445,7 +504,7 @@ namespace VerbExpansionFramework
         // Diual Wield
         private static bool DualWield_Ext_Verb_OffhandTryStartCastOn(Verb instance)
         {
-            if (instance.EquipmentSource == null || instance.EquipmentSource.def != instance.CasterPawn.equipment.Primary.def)
+            if (instance.EquipmentSource == null || instance.EquipmentSource != instance.CasterPawn.equipment.Primary)
             {
                 return false;
             }
