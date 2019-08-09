@@ -103,7 +103,7 @@ namespace VerbExpansionFramework
                             {
                                 ((Action)(() =>
                                 {
-                                    if (CurRangedVerb.EquipmentSource == Pawn.equipment.Primary && DualWield.Ext_Pawn.TryGetOffhandAttackVerb(Pawn, Pawn.mindState.enemyTarget, !Pawn.IsColonist) != null)
+                                    if (CurRangedVerb.EquipmentSource == Pawn.equipment.Primary && (bool)VEF_ReflectionData.MB_TryGetOffHandEquipment.Invoke(null, new object[] { Pawn.equipment, null }) != false && DualWield.Ext_Pawn.TryGetOffhandAttackVerb(Pawn, Pawn.mindState.enemyTarget, !Pawn.IsColonist) != null)
                                     {
                                         command_VerbTarget.defaultDesc = (verb.verbProps.label == verb.EquipmentSource.def.label) ? verb.EquipmentSource.LabelCap + ": " + verb.EquipmentSource.DescriptionDetailed : verb.verbProps.label + " :: " + verb.EquipmentSource.LabelCap + ": " + verb.EquipmentSource.DescriptionDetailed;
                                         tempIcon = verb.EquipmentSource.def.uiIcon;

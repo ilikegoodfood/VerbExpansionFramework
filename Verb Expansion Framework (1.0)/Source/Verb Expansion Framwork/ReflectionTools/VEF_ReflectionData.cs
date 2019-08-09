@@ -17,11 +17,15 @@ namespace VerbExpansionFramework
     {
         static VEF_ReflectionData()
         {
-
+            MB_TryGetOffHandEquipment = AccessTools.Method(type: GenTypes.GetTypeInAnyAssemblyNew("DualWield.Ext_Pawn_EquipmentTracker", "DualWield"), name: "TryGetOffHandEquipment");
         }
 
         //Fields
             //Core
         public static FieldInfo FI_Pawn_HealthTracker_pawn = AccessTools.Field(type: typeof(Pawn_HealthTracker), name: "pawn");
+
+        //Methods
+            //TryGetOffHandEquipment
+        public static MethodBase MB_TryGetOffHandEquipment;
     }
 }
