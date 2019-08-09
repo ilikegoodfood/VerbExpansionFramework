@@ -264,12 +264,15 @@ namespace VerbExpansionFramework
                     }
                     catch (TypeLoadException ex)
                     {
-
+                        
                     }
                 }
             }
 
-            __result = (__result + healthScaleOffset) * healthScaleFactor;
+            healthScaleOffset += __instance.health.capacities.GetLevel(VEF_DefOf.HealthModifier) - 1f;
+            healthScaleFactor += __instance.health.capacities.GetLevel(VEF_DefOf.HealthModifierFactor) - 1f;
+
+            __result = Mathf.Clamp((__result + healthScaleOffset) * (healthScaleFactor), 0.1f, float.MaxValue);
             return;
         }
 

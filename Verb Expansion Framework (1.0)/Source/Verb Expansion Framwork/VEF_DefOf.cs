@@ -12,5 +12,9 @@ namespace VerbExpansionFramework
     public static class VEF_DefOf
     {
         public static PawnCapacityDef BleedRate;
+
+        public static PawnCapacityDef HealthModifier;
+
+        public static PawnCapacityDef HealthModifierFactor;
     }
 }
