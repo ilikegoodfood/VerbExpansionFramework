@@ -297,10 +297,12 @@ namespace VerbExpansionFramework
                                     {
                                         ((Action)(() =>
                                         {
-                                            ThingWithComps offHandEquipment = DualWield.Ext_Pawn.TryGetOffhandAttackVerb(Pawn, Pawn.mindState.enemyTarget, !Pawn.IsColonist).EquipmentSource;
-                                            if (offHandEquipment != null)
+                                            object[] parameters = new object[] { pawn.equipment, null };
+                                            bool hasOffHandThing = (bool)VEF_ReflectionData.MB_TryGetOffHandEquipment.Invoke(null, parameters);
+                                            ThingWithComps offHandThing = (ThingWithComps)parameters[1];
+                                            if (hasOffHandThing != false)
                                             {
-                                                if (!allEquipmentVerbs[k].IsMeleeAttack && allEquipmentVerbs[k].EquipmentSource != offHandEquipment && allEquipmentVerbs[k].IsStillUsableBy(this.Pawn))
+                                                if (!allEquipmentVerbs[k].IsMeleeAttack && allEquipmentVerbs[k].EquipmentSource != offHandThing && allEquipmentVerbs[k].IsStillUsableBy(this.Pawn))
                                                 {
                                                     this.rangedVerbs.Add(new VerbEntry(allEquipmentVerbs[k], this.Pawn));
                                                 }
