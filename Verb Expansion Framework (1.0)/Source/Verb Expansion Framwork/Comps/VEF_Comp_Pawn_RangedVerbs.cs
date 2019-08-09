@@ -97,36 +97,11 @@ namespace VerbExpansionFramework
                     Texture2D tempIcon = BaseContent.BadTex;
                     if (CurRangedVerb.EquipmentSource != null)
                     {
-                        if (VEF_ModCompatibilityCheck.enabled_rooloDualWield)
+                        command_VerbTarget.defaultDesc = (verb.verbProps.label == verb.EquipmentSource.def.label) ? verb.EquipmentSource.LabelCap + ": " + verb.EquipmentSource.def.description.CapitalizeFirst() : verb.verbProps.label + " :: " + verb.EquipmentSource.LabelCap + ": " + verb.EquipmentSource.def.description.CapitalizeFirst();
+                        tempIcon = CurRangedVerb.EquipmentSource.def.uiIcon;
+                        if (tempIcon != BaseContent.BadTex || tempIcon != null)
                         {
-                            try
-                            {
-                                ((Action)(() =>
-                                {
-                                    if (CurRangedVerb.EquipmentSource == Pawn.equipment.Primary && (bool)VEF_ReflectionData.MB_TryGetOffHandEquipment.Invoke(null, new object[] { Pawn.equipment, null }) != false && DualWield.Ext_Pawn.TryGetOffhandAttackVerb(Pawn, Pawn.mindState.enemyTarget, !Pawn.IsColonist) != null)
-                                    {
-                                        command_VerbTarget.defaultDesc = (verb.verbProps.label == verb.EquipmentSource.def.label) ? verb.EquipmentSource.LabelCap + ": " + verb.EquipmentSource.DescriptionDetailed : verb.verbProps.label + " :: " + verb.EquipmentSource.LabelCap + ": " + verb.EquipmentSource.DescriptionDetailed;
-                                        tempIcon = verb.EquipmentSource.def.uiIcon;
-                                        if (tempIcon != BaseContent.BadTex || tempIcon != null)
-                                        {
-                                            command_VerbTarget.icon = tempIcon;
-                                        }
-                                    }
-                                }))();
-                            }
-                            catch (TypeLoadException ex)
-                            {
-
-                            }
-                        }
-                        else
-                        {
-                            command_VerbTarget.defaultDesc = (verb.verbProps.label == verb.EquipmentSource.def.label) ? verb.EquipmentSource.LabelCap + ": " + verb.EquipmentSource.def.description.CapitalizeFirst() : verb.verbProps.label + " :: " + verb.EquipmentSource.LabelCap + ": " + verb.EquipmentSource.def.description.CapitalizeFirst();
-                            tempIcon = CurRangedVerb.EquipmentSource.def.uiIcon;
-                            if (tempIcon != BaseContent.BadTex || tempIcon != null)
-                            {
-                                command_VerbTarget.icon = tempIcon;
-                            }
+                            command_VerbTarget.icon = tempIcon;
                         }
                     }
                     else if (verb.verbProps.LaunchesProjectile)

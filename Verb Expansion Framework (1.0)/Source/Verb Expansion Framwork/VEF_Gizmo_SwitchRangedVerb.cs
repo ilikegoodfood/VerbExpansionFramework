@@ -51,23 +51,18 @@ namespace VerbExpansionFramework
                         object[] parameters = new object[] { pawn.equipment, null };
                         bool hasOffHandEquipment = (bool)VEF_ReflectionData.MB_TryGetOffHandEquipment.Invoke(null, parameters);
                         ThingWithComps offHandThing = (ThingWithComps)parameters[1];
-                        if (offHandThing != null)
+                        if (offHandThing != null && offHandThing.GetComp<CompEquippable>() != null && !offHandThing.GetComp<CompEquippable>().AllVerbs.NullOrEmpty())
                         {
-                            Verb offHandVerb = DualWield.Ext_Pawn.TryGetOffhandAttackVerb(pawn, pawn.mindState.enemyTarget, !pawn.IsColonist);
-                            if (offHandVerb != null)
-                            {
                                 GUI.color = offHandThing.DrawColor;
                                 Material mat = (!this.disabled) ? null : TexUI.GrayscaleGUI;
                                 Texture2D texture2D = offHandThing.def.uiIcon;
-                                bool flag = texture2D == null;
-                                if (flag)
+                                if (texture2D == null)
                                 {
                                     texture2D = BaseContent.BadTex;
                                 }
                                 Rect outerRect = new Rect(topLeft.x, topLeft.y + 10f, this.GetWidth(maxWidth), 75f);
                                 Widgets.DrawTextureFitted(outerRect, texture2D, this.iconDrawScale * 0.85f, this.iconProportions, this.iconTexCoords, this.iconAngle, mat);
                                 GUI.color = Color.white;
-                            }
                         }
                     }))();
                 }
