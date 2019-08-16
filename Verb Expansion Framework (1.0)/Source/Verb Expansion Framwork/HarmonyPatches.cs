@@ -423,18 +423,16 @@ namespace VerbExpansionFramework
             }
         }
 
-
         private static void Pawn_HealthTracker_PreApplyDamagePostfix(Pawn_HealthTracker __instance, DamageInfo dinfo)
         {
             if(dinfo.Instigator != null)
             {
                 Pawn pawn = (Pawn)VEF_ReflectionData.FI_Pawn_HealthTracker_pawn.GetValue(__instance);
-                List<Hediff> hediffs = pawn.health.hediffSet.hediffs;
-                for (int i = 0; i < hediffs.Count; i++)
+                foreach (Hediff hediff in pawn.health.hediffSet.hediffs)
                 {
-                    if (hediffs[i].TryGetComp<VEF_HediffComp_SmokepopDefense>() != null)
+                    if (hediff.TryGetComp<VEF_HediffComp_SmokepopDefense>() != null)
                     {
-                        hediffs[i].TryGetComp<VEF_HediffComp_SmokepopDefense>().TryTriggerSmokepopDefense(dinfo);
+                        hediff.TryGetComp<VEF_HediffComp_SmokepopDefense>().TryTriggerSmokepopDefense(dinfo);
                     }
                     if (VEF_ModCompatibilityCheck.enabled_SmokepopDefenseFramework)
                     {
@@ -442,9 +440,9 @@ namespace VerbExpansionFramework
                         {
                             ((Action)(() =>
                             {
-                                if (hediffs[i].TryGetComp<SmokepopCompFramework.SCF_HediffComp_SmokepopDefense>() != null)
+                                if (hediff.TryGetComp<SmokepopCompFramework.SCF_HediffComp_SmokepopDefense>() != null)
                                 {
-                                    hediffs[i].TryGetComp<SmokepopCompFramework.SCF_HediffComp_SmokepopDefense>().TryTriggerSmokepopDefense(dinfo);
+                                    hediff.TryGetComp<SmokepopCompFramework.SCF_HediffComp_SmokepopDefense>().TryTriggerSmokepopDefense(dinfo);
                                 }
                             }))();
                         }
@@ -460,9 +458,9 @@ namespace VerbExpansionFramework
 
         private static void SmokepopBelt_CheckPreAbsorbDamagePostfix(SmokepopBelt __instance, DamageInfo dinfo)
         {
-            if (!dinfo.Def.isExplosive && dinfo.Def.harmsHealth && dinfo.Def.ExternalViolenceFor(__instance))
+            if (!dinfo.Def.isExplosive && dinfo.Def.harmsHealth && dinfo.Def.ExternalViolenceFor(__instance.Wearer))
             {
-                if (dinfo.Instigator is Pawn instigatorPawn && instigatorPawn.GetComp<VEF_Comp_Pawn_RangedVerbs>().CurRangedVerb != null && !(dinfo.Weapon != null && instigatorPawn.GetComp<VEF_Comp_Pawn_RangedVerbs>().CurRangedVerb.EquipmentSource != null && dinfo.Weapon == instigatorPawn.GetComp<VEF_Comp_Pawn_RangedVerbs>().CurRangedVerb.EquipmentSource.def) && instigatorPawn.Position.DistanceTo(__instance.Wearer.Position) > 3f)
+                if (dinfo.Instigator is Pawn instigatorPawn && instigatorPawn.GetComp<VEF_Comp_Pawn_RangedVerbs>().CurRangedVerb != null && !(dinfo.Weapon != null && instigatorPawn.GetComp<VEF_Comp_Pawn_RangedVerbs>().CurRangedVerb.EquipmentSource != null && dinfo.Weapon == instigatorPawn.GetComp<VEF_Comp_Pawn_RangedVerbs>().CurRangedVerb.EquipmentSource.def) && instigatorPawn.Position.DistanceTo(__instance.Wearer.Position) > 1f)
                 {
                     IntVec3 position = __instance.Wearer.Position;
                     Map map = __instance.Wearer.Map;
