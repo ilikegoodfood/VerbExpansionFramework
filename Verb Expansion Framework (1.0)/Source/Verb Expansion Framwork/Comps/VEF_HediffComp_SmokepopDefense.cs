@@ -26,10 +26,8 @@ namespace VerbExpansionFramework
 
         public void TryTriggerSmokepopDefense(DamageInfo dinfo)
         {
-            Log.Message("Trying to trigger smokepop defense");
             if (Find.TickManager.TicksGame > this.lastUsedSmoke + (this.Props.rechargeTime * 60))
             {
-                Log.Message("lastUsedSmoke found and rechargeTime passed");
                 if (!dinfo.Def.isExplosive && dinfo.Def.harmsHealth && dinfo.Def.ExternalViolenceFor(Pawn))
                 {
                     if (dinfo.Instigator is Pawn instigatorPawn && instigatorPawn.GetComp<VEF_Comp_Pawn_RangedVerbs>().CurRangedVerb != null && instigatorPawn.Position.DistanceTo(Pawn.Position) > 1f)
