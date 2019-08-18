@@ -35,6 +35,8 @@ namespace VerbExpansionFramework
 
         public static bool enabled_RangeAnimalFramework;
 
+        public static bool enabled_RimWorldOfMagic = ModsConfig.ActiveModsInLoadOrder.Any(m => m.Name == "A RimWorld of Magic");
+
         public static bool enabled_SmokepopDefenseFramework;
 
         public static bool enabled_VariableHealthFramework;

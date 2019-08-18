@@ -313,10 +313,13 @@ namespace VerbExpansionFramework
         [HarmonyPriority(1200)]
         private static void Pawn_TryGetAttackVerbPostfix(Pawn __instance, ref Verb __result, ref Thing target)
         {
-            Verb tempVerb = __instance.GetComp<VEF_Comp_Pawn_RangedVerbs>().TryGetRangedVerb(target);
-            if (tempVerb != null)
+            if (__instance.TryGetComp<VEF_Comp_Pawn_RangedVerbs>() != null)
             {
-                __result = tempVerb;
+                Verb tempVerb = __instance.TryGetComp<VEF_Comp_Pawn_RangedVerbs>().TryGetRangedVerb(target);
+                if (tempVerb != null)
+                {
+                    __result = tempVerb;
+                }
             }
             return;
         }
