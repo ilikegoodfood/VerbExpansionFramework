@@ -17,11 +17,6 @@ namespace VerbExpansionFramework
     public class HarmonyPatches
     {
         private static readonly Type patchType = typeof(HarmonyPatches);
-        private static MethodBase MB_Pawn_DraftController_GetGizmo()
-        {
-            var predicateClass = typeof(Pawn_DraftController).GetNestedTypes(AccessTools.all).FirstOrDefault(t => t.FullName.Contains("c__Iterator0"));
-            return predicateClass.GetMethods(AccessTools.all).FirstOrDefault(m => m.Name.Contains("MoveNext"));
-        }
 
         static HarmonyPatches()
         {
@@ -38,40 +33,64 @@ namespace VerbExpansionFramework
             harmony.Patch(original: AccessTools.Method(type: typeof(Command_VerbTarget), name: nameof(Command_VerbTarget.ProcessInput)), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(Command_VerbTarget_ProcessInputPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(FloatMenuUtility), name: nameof(FloatMenuUtility.GetAttackAction)), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(FloatMenuUtility_GetAttackActionPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(HealthCardUtility), name: "GenerateSurgeryOption"), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(HealthCardUtility_GenerateSurgeryOptionPostfix)));
-            harmony.Patch(original: AccessTools.Property(type: typeof(Pawn), name: nameof(Pawn.HealthScale)).GetGetMethod(true), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(Pawn_GetHealthScalePostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(HediffSet), name: "CalculateBleedRate"), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(HediffSet_CalculateBleedRatePostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(JobDriver_Wait), name: "CheckForAutoAttack"), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(JobDriver_Wait_CheckForAutoAttackPostfix)));
+            harmony.Patch(original: AccessTools.Property(type: typeof(Pawn), name: nameof(Pawn.HealthScale)).GetGetMethod(true), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(Pawn_GetHealthScalePostfix)));
             if (!VEF_ModCompatibilityCheck.enabled_CombatExtended)
             {
                 harmony.Patch(original: AccessTools.Method(type: typeof(Pawn), name: nameof(Pawn.TryGetAttackVerb)), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(Pawn_TryGetAttackVerbPostfix)));
                 harmony.Patch(original: AccessTools.Method(type: typeof(PawnAttackGizmoUtility), name: "GetSquadAttackGizmo"), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(PawnAttackGizmoUtility_GetSquadAttackGizmoPostfix)));
             }
-            harmony.Patch(original: MB_Pawn_DraftController_GetGizmo(), prefix: null, postfix: null, transpiler: new HarmonyMethod(type: patchType, name: nameof(Pawn_DraftController_GetGizmosTranspiler)));
+            harmony.Patch(original: VEF_ReflectionData.MB_Pawn_DraftController_GetGizmo(), prefix: null, postfix: null, transpiler: new HarmonyMethod(type: patchType, name: nameof(Pawn_DraftController_GetGizmosTranspiler)));
             harmony.Patch(original: AccessTools.Method(type: typeof(Pawn_HealthTracker), name: nameof(Pawn_HealthTracker.PreApplyDamage)), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(Pawn_HealthTracker_PreApplyDamagePostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(SmokepopBelt), name: nameof(SmokepopBelt.CheckPreAbsorbDamage)), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(SmokepopBelt_CheckPreAbsorbDamagePostfix)));
+            harmony.Patch(original: AccessTools.Method(type: typeof(Targeter), name: "GetTargetingVerb"), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(Targeter_GetTargetingVerbPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(ThoughtWorker_IsCarryingRangedWeapon), name: "CurrentStateInternal"), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(ThoughtWorker_IsCarryingRangedWeapon_CurrentStateInternalPostfix)));
-            harmony.Patch(original: AccessTools.Method(type: typeof(Verb_ShootOneUse), name: "SelfConsume"), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(Verb_ShootOneUse_SelfConsume)));
+
+            // UpdateRangedVerbPostfix (forces update to ranged verbs when a change to a possible verb source is detected)
+            harmony.Patch(original: AccessTools.Method(type: typeof(HediffSet), name: nameof(HediffSet.DirtyCache)), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(UpdateRangedVerbsPostfix)));
+            harmony.Patch(original: AccessTools.Method(type: typeof(Pawn_EquipmentTracker), name: nameof(Pawn_EquipmentTracker.Notify_EquipmentAdded)), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(UpdateRangedVerbsPostfix)));
+            harmony.Patch(original: AccessTools.Method(type: typeof(Pawn_EquipmentTracker), name: nameof(Pawn_EquipmentTracker.Notify_EquipmentRemoved)), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(UpdateRangedVerbsPostfix)));
 
             // Harmony Patches for Mod Compatibility
+            // Dual Wield
             if (VEF_ModCompatibilityCheck.enabled_rooloDualWield)
             {
-                // Dual Wield
-                harmony.Patch(original: AccessTools.Method(type: GenTypes.GetTypeInAnyAssemblyNew("DualWield.Ext_Verb", "DualWield"), name: "OffhandTryStartCastOn"), prefix: new HarmonyMethod(type: patchType, name: nameof(DualWield_Ext_Verb_OffhandTryStartCastOn)), postfix: null);
+                try
+                {
+                    ((Action)(() =>
+                    {
+                        harmony.Patch(original: AccessTools.Method(type: typeof(DualWield.Ext_Verb), name: nameof(DualWield.Ext_Verb.OffhandTryStartCastOn)), prefix: new HarmonyMethod(type: patchType, name: nameof(DualWield_Ext_Verb_OffhandTryStartCastOn)), postfix: null);
+                    }))();
+                }
+                catch (TypeLoadException ex)
+                {
+
+                }
             }
 
+            // Range Animal Framework
             if (VEF_ModCompatibilityCheck.enabled_RangeAnimalFramework)
             {
-                //Range Animal Framework
-                harmony.Patch(original: AccessTools.Method(type: GenTypes.GetTypeInAnyAssemblyNew("AnimalRangeAttack.ARA_FightAI_Patch", "AnimalRangeAttack"), name: "Prefix"), prefix: null, postfix: null, transpiler: new HarmonyMethod(type: patchType, name: nameof(PrefixSlayerTranspiler)));
-                harmony.Patch(original: AccessTools.Method(type: GenTypes.GetTypeInAnyAssemblyNew("AnimalRangeAttack.ARA__ManHunter_Patch", "AnimalRangeAttack"), name: "Prefix"), prefix: null, postfix: null, transpiler: new HarmonyMethod(type: patchType, name: nameof(PrefixSlayerTranspiler)));
-                harmony.Patch(original: AccessTools.Method(type: GenTypes.GetTypeInAnyAssemblyNew("AnimalRangeAttack.ARA__VerbCheck_Patch", "AnimalRangeAttack"), name: "Prefix"), prefix: null, postfix: null, transpiler: new HarmonyMethod(type: patchType, name: nameof(PrefixSlayerTranspiler)));
+                try
+                {
+                    ((Action)(() =>
+                    {
+                        harmony.Patch(original: AccessTools.Method(type: GenTypes.GetTypeInAnyAssemblyNew("AnimalRangeAttack.ARA_FightAI_Patch", "AnimalRangeAttack"), name: "Prefix"), prefix: null, postfix: null, transpiler: new HarmonyMethod(type: patchType, name: nameof(PrefixSlayerTranspiler)));
+                        harmony.Patch(original: AccessTools.Method(type: GenTypes.GetTypeInAnyAssemblyNew("AnimalRangeAttack.ARA__ManHunter_Patch", "AnimalRangeAttack"), name: "Prefix"), prefix: null, postfix: null, transpiler: new HarmonyMethod(type: patchType, name: nameof(PrefixSlayerTranspiler)));
+                        harmony.Patch(original: AccessTools.Method(type: GenTypes.GetTypeInAnyAssemblyNew("AnimalRangeAttack.ARA__VerbCheck_Patch", "AnimalRangeAttack"), name: "Prefix"), prefix: null, postfix: null, transpiler: new HarmonyMethod(type: patchType, name: nameof(PrefixSlayerTranspiler)));
+                    }))();
+                }
+                catch (TypeLoadException ex)
+                {
+
+                }
             }
         }
 
         // Harmony Patches required for Core operation.
         private static void Alert_BrawlerHasRangedWeapon_GetReportPostfix(ref AlertReport __result)
         {
-            // Log.Message("Postfixing");
             IEnumerable<Pawn> brawlersWithRangedWeapon = BrawlersWithRangedWeapon(__result);
             IEnumerable<Pawn> brawlersWithRangedHediff = BrawlersWithRangedHediff();
             
@@ -200,7 +219,10 @@ namespace VerbExpansionFramework
 
         private static void Command_VerbTarget_ProcessInputPostfix(Command_VerbTarget __instance)
         {
-            __instance.verb.CasterPawn.GetComp<VEF_Comp_Pawn_RangedVerbs>().SetCurRangedVerb(__instance.verb, null);
+            if (!__instance.verb.IsMeleeAttack)
+            {
+                __instance.verb.CasterPawn.GetComp<VEF_Comp_Pawn_RangedVerbs>().SetCurRangedVerb(__instance.verb, null);
+            }
             return;
         }
 
@@ -233,46 +255,6 @@ namespace VerbExpansionFramework
                     __result.Label = __result.Label + " " + "EquipWarningBrawler".Translate();
                 }
             }
-            return;
-        }
-
-        private static void Pawn_GetHealthScalePostfix(Pawn __instance, ref float __result)
-        {
-            float healthScaleOffset = 0f;
-            float healthScaleFactor = 1f;
-
-            foreach (Hediff hediff in __instance.health.hediffSet.hediffs)
-            {
-                if (hediff.TryGetComp<VEF_HediffComp_HealthModifier>() != null)
-                {
-                    healthScaleOffset += hediff.TryGetComp<VEF_HediffComp_HealthModifier>().Props.healthScaleOffset;
-                    healthScaleFactor += hediff.TryGetComp<VEF_HediffComp_HealthModifier>().Props.healthScaleFactorOffset;
-                }
-
-                if (VEF_ModCompatibilityCheck.enabled_VariableHealthFramework)
-                {
-                    try
-                    {
-                        ((Action)(() =>
-                        {
-                            if (hediff.TryGetComp<VariableHealthFramework.VHF_HediffComp_HealthModifier>() != null)
-                            {
-                                healthScaleOffset += hediff.TryGetComp<VariableHealthFramework.VHF_HediffComp_HealthModifier>().Props.healthScaleOffset;
-                                healthScaleFactor += hediff.TryGetComp<VariableHealthFramework.VHF_HediffComp_HealthModifier>().Props.healthScaleFactorOffset;
-                            }
-                        }))();
-                    }
-                    catch (TypeLoadException ex)
-                    {
-                        
-                    }
-                }
-            }
-
-            healthScaleOffset += __instance.health.capacities.GetLevel(VEF_DefOf.HealthModifier) - 1f;
-            healthScaleFactor += __instance.health.capacities.GetLevel(VEF_DefOf.HealthModifierFactor) - 1f;
-
-            __result = Mathf.Clamp((__result + healthScaleOffset) * (healthScaleFactor), 0.1f, float.MaxValue);
             return;
         }
 
@@ -310,6 +292,46 @@ namespace VerbExpansionFramework
             return;
         }
 
+        private static void Pawn_GetHealthScalePostfix(Pawn __instance, ref float __result)
+        {
+            float healthScaleOffset = 0f;
+            float healthScaleFactor = 1f;
+
+            foreach (Hediff hediff in __instance.health.hediffSet.hediffs)
+            {
+                if (hediff.TryGetComp<VEF_HediffComp_HealthModifier>() != null)
+                {
+                    healthScaleOffset += hediff.TryGetComp<VEF_HediffComp_HealthModifier>().Props.healthScaleOffset;
+                    healthScaleFactor += hediff.TryGetComp<VEF_HediffComp_HealthModifier>().Props.healthScaleFactorOffset;
+                }
+
+                if (VEF_ModCompatibilityCheck.enabled_VariableHealthFramework)
+                {
+                    try
+                    {
+                        ((Action)(() =>
+                        {
+                            if (hediff.TryGetComp<VariableHealthFramework.VHF_HediffComp_HealthModifier>() != null)
+                            {
+                                healthScaleOffset += hediff.TryGetComp<VariableHealthFramework.VHF_HediffComp_HealthModifier>().Props.healthScaleOffset;
+                                healthScaleFactor += hediff.TryGetComp<VariableHealthFramework.VHF_HediffComp_HealthModifier>().Props.healthScaleFactorOffset;
+                            }
+                        }))();
+                    }
+                    catch (TypeLoadException ex)
+                    {
+
+                    }
+                }
+            }
+
+            healthScaleOffset += __instance.health.capacities.GetLevel(VEF_DefOf.HealthModifier) - 1f;
+            healthScaleFactor += __instance.health.capacities.GetLevel(VEF_DefOf.HealthModifierFactor) - 1f;
+
+            __result = Mathf.Clamp((__result + healthScaleOffset) * (healthScaleFactor), 0.1f, float.MaxValue);
+            return;
+        }
+
         [HarmonyPriority(1200)]
         private static void Pawn_TryGetAttackVerbPostfix(Pawn __instance, ref Verb __result, ref Thing target)
         {
@@ -340,7 +362,7 @@ namespace VerbExpansionFramework
                     }
                 }
             }
-            if (flag || VEF_Comp_Pawn_RangedVerbs.ShouldUseSquadAttackGizmo())
+            if (flag || (VEF_Comp_Pawn_RangedVerbs.ShouldUseSquadAttackGizmo() && VEF_Comp_Pawn_RangedVerbs.AtLeastOneSelectedPawnUsingOtherRangedVerb()))
             {
                 command_Target.defaultLabel = "CommandSquadEquipmentAttack".Translate();
                 command_Target.defaultDesc = "CommandSquadEquipmentAttackDesc".Translate();
@@ -357,7 +379,7 @@ namespace VerbExpansionFramework
                     }).Cast<Pawn>();
                     foreach (Pawn pawn2 in pawns)
                     {
-                        if (pawn2.equipment != null && pawn2.equipment.Primary != null && pawn2.GetComp<VEF_Comp_Pawn_RangedVerbs>().CurRangedVerb.EquipmentSource.def != pawn2.equipment.Primary.def)
+                        if (pawn2.equipment != null && pawn2.equipment.Primary != null && !pawn2.equipment.PrimaryEq.PrimaryVerb.IsMeleeAttack && (pawn2.GetComp<VEF_Comp_Pawn_RangedVerbs>().CurRangedVerb.EquipmentSource == null || pawn2.GetComp<VEF_Comp_Pawn_RangedVerbs>().CurRangedVerb.EquipmentSource.def != pawn2.equipment.Primary.def))
                         {
                             pawn2.GetComp<VEF_Comp_Pawn_RangedVerbs>().SetCurRangedVerb(pawn2.equipment.PrimaryEq.PrimaryVerb, null);
                         }
@@ -478,6 +500,19 @@ namespace VerbExpansionFramework
             return;
         }
 
+        private static void Targeter_GetTargetingVerbPostfix(Pawn pawn, ref Verb __result)
+        {
+            if (pawn.TryGetComp<VEF_Comp_Pawn_RangedVerbs>() != null)
+            {
+                Verb tempVerb = pawn.TryGetComp<VEF_Comp_Pawn_RangedVerbs>().TryGetRangedVerb(pawn.mindState.enemyTarget);
+                if (tempVerb != null)
+                {
+                    __result = tempVerb;
+                }
+            }
+            return;
+        }
+
         private static void ThoughtWorker_IsCarryingRangedWeapon_CurrentStateInternalPostfix(ref ThoughtState __result, Pawn p)
         {
             FieldInfo FI_stageInex = AccessTools.Field(type: typeof(ThoughtState), name: "stageIndex");
@@ -496,15 +531,34 @@ namespace VerbExpansionFramework
             return;
         }
 
-        private static void Verb_ShootOneUse_SelfConsume(Verb_ShootOneUse __instance)
+        private static void UpdateRangedVerbsPostfix(object __instance)
         {
-            if(__instance.HediffSource != null && __instance.HediffSource.pawn.health.hediffSet.HasHediff(__instance.HediffSource.def))
+            Pawn pawn;
+
+            if (__instance.GetType() == typeof(HediffSet))
             {
-                __instance.HediffSource.pawn.health.RemoveHediff(__instance.HediffSource);
+                HediffSet hediffSet = (HediffSet)__instance;
+                pawn = hediffSet.pawn;
+            }
+            else
+            {
+                Pawn_EquipmentTracker equipmentTracker = (Pawn_EquipmentTracker)__instance;
+                pawn = equipmentTracker.pawn;
+            }
+
+            if (pawn != null && pawn.Spawned && !pawn.Suspended)
+            {
+                VEF_Comp_Pawn_RangedVerbs comp = pawn.TryGetComp<VEF_Comp_Pawn_RangedVerbs>();
+                if (comp != null)
+                {
+                    comp.UpdateRangedVerbs();
+                    comp.TryGetRangedVerb(pawn.mindState.enemyTarget);
+                }
             }
         }
 
         // Harmony Patches for Mod Compatibility
+
         // Diual Wield
         private static bool DualWield_Ext_Verb_OffhandTryStartCastOn(Verb instance)
         {

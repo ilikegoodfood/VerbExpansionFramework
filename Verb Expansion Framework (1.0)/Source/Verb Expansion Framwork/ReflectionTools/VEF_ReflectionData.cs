@@ -17,15 +17,24 @@ namespace VerbExpansionFramework
     {
         static VEF_ReflectionData()
         {
-            MB_TryGetOffHandEquipment = AccessTools.Method(type: GenTypes.GetTypeInAnyAssemblyNew("DualWield.Ext_Pawn_EquipmentTracker", "DualWield"), name: "TryGetOffHandEquipment");
+            if (VEF_ModCompatibilityCheck.enabled_rooloDualWield)
+            {
+                MB_TryGetOffHandEquipment = AccessTools.Method(type: GenTypes.GetTypeInAnyAssemblyNew("DualWield.Ext_Pawn_EquipmentTracker", "DualWield"), name: "TryGetOffHandEquipment");
+            }
         }
 
         //Fields
-            //Core
+        //Core
         public static FieldInfo FI_Pawn_HealthTracker_pawn = AccessTools.Field(type: typeof(Pawn_HealthTracker), name: "pawn");
 
         //Methods
-            //TryGetOffHandEquipment
+        //Core
+        public static MethodBase MB_Pawn_DraftController_GetGizmo()
+        {
+            var predicateClass = typeof(Pawn_DraftController).GetNestedTypes(AccessTools.all).FirstOrDefault(t => t.FullName.Contains("c__Iterator0"));
+            return predicateClass.GetMethods(AccessTools.all).FirstOrDefault(m => m.Name.Contains("MoveNext"));
+        }
+        //TryGetOffHandEquipment
         public static MethodBase MB_TryGetOffHandEquipment;
     }
 }

@@ -89,24 +89,6 @@ namespace VerbExpansionFramework
             }
         }
 
-        public override void MergeWith(Gizmo other)
-        {
-            if (!(other is VEF_Gizmo_SwitchRangedVerb merge_TargetVerb))
-            {
-                Log.ErrorOnce("Tried to merge Command_VerbTarget with unexpected type", 73406263, false);
-                return;
-            }
-            if (groupedVerbs == null)
-            {
-                groupedVerbs = new List<Verb>();
-            }
-            groupedVerbs.Add(merge_TargetVerb.verb);
-            if (merge_TargetVerb.groupedVerbs != null)
-            {
-                groupedVerbs.AddRange(merge_TargetVerb.groupedVerbs);
-            }
-        }
-
         public override void ProcessInput(Event ev)
         {
             UpdateCurRangedVerb();
@@ -133,13 +115,14 @@ namespace VerbExpansionFramework
                 {
                     this.verb = verbEntry.verb;
                     pawn.GetComp<VEF_Comp_Pawn_RangedVerbs>().SetCurRangedVerb(this.verb, null);
+
                     Find.Targeter.StopTargeting();
                 }
 
                 if (verbEntry.verb.EquipmentCompSource != null)
                 {
                     verbEntry.verb.EquipmentSource.TryGetQuality(out QualityCategory qualityString);
-                    verbLabel = (verbEntry.verb.verbProps.label == verbEntry.verb.EquipmentSource.def.label) ? verbEntry.verb.EquipmentSource.LabelCap : verbEntry.verb.verbProps.label.CapitalizeFirst() + " " + qualityString;
+                    verbLabel = (verbEntry.verb.verbProps.label == verbEntry.verb.EquipmentSource.def.label) ? verbEntry.verb.EquipmentSource.LabelCap : verbEntry.verb.verbProps.label.CapitalizeFirst() + ": " + verbEntry.verb.EquipmentSource.LabelCap;
                 }
                 else if (verbEntry.verb.HediffCompSource != null)
                 {

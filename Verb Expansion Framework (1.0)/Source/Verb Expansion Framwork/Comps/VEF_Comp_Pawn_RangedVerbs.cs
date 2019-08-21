@@ -43,7 +43,7 @@ namespace VerbExpansionFramework
             if (AtLeastOnePawnHasRangedVerb())
             {
                 Gizmo rangedVerbGizmo;
-                if (ShouldUseSquadAttackGizmo() && !VEF_ModCompatibilityCheck.enabled_CombatExtended)
+                if (ShouldUseSquadAttackGizmo() && AtLeastOneSelectedPawnUsingOtherRangedVerb() && !VEF_ModCompatibilityCheck.enabled_CombatExtended)
                 {
                     rangedVerbGizmo = CreateSquadAttackGizmo(Pawn);
                 }
@@ -84,7 +84,7 @@ namespace VerbExpansionFramework
                     }
 
                     // Visible Conditions
-                    if (verb == null || (rangedVerbs.Count == 1 && verb.EquipmentSource != null && verb.EquipmentSource == verb.CasterPawn.equipment.Primary) || (verb.CasterPawn.story.WorkTagIsDisabled(WorkTags.Violent) && !verb.CasterPawn.Drafted))
+                    if (verb == null || (rangedVerbs.Count == 1 && verb.EquipmentSource != null && verb.EquipmentSource == verb.CasterPawn.equipment.Primary) || (verb.CasterPawn.story.WorkTagIsDisabled(WorkTags.Violent) && !verb.CasterPawn.Drafted) || VEF_Comp_Pawn_RangedVerbs.ShouldUseSquadAttackGizmo())
                     {
                         this.visible = false;
                     }
@@ -135,6 +135,7 @@ namespace VerbExpansionFramework
             Command_Target command_Target = new Command_Target();
             command_Target.defaultLabel = "CommandSquadAttack".Translate();
             command_Target.defaultDesc = "CommandSquadAttackDesc".Translate();
+            command_Target.order = +1f;
             command_Target.targetingParams = TargetingParameters.ForAttackAny();
             command_Target.hotKey = KeyBindingDefOf.Misc2;
             command_Target.icon = TexCommand.SquadAttack;
@@ -400,6 +401,27 @@ namespace VerbExpansionFramework
                 if (pawn != null && pawn.IsColonistPlayerControlled && !pawn.story.WorkTagIsDisabled(WorkTags.Violent))
                 {
                     if (pawn.GetComp<VEF_Comp_Pawn_RangedVerbs>().GetRangedVerbs.Count > 1)
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        public static bool AtLeastOneSelectedPawnUsingOtherRangedVerb()
+        {
+            if (Find.Selector.NumSelected <= 1)
+            {
+                return false;
+            }
+            List<object> selectedObjectsListForReading = Find.Selector.SelectedObjectsListForReading;
+            for (int i = 0; i < selectedObjectsListForReading.Count; i++)
+            {
+                Pawn pawn = selectedObjectsListForReading[i] as Pawn;
+                if (pawn != null && pawn.IsColonistPlayerControlled && !pawn.story.WorkTagIsDisabled(WorkTags.Violent))
+                {
+                    if (pawn.GetComp<VEF_Comp_Pawn_RangedVerbs>().CurRangedVerb != null && (pawn.GetComp<VEF_Comp_Pawn_RangedVerbs>().CurRangedVerb.EquipmentSource == null || pawn.GetComp<VEF_Comp_Pawn_RangedVerbs>().CurRangedVerb.EquipmentSource != pawn.equipment.Primary))
                     {
                         return true;
                     }

@@ -29,9 +29,9 @@ namespace VerbExpansionFramework
             }
         }
 
-        public static bool enabled_rooloDualWield = ModsConfig.ActiveModsInLoadOrder.Any(m => m.Name == "Dual Wield");
-
         public static bool enabled_CombatExtended = ModsConfig.ActiveModsInLoadOrder.Any(m => m.Name == "Combat Extended");
+
+        public static bool enabled_rooloDualWield = ModsConfig.ActiveModsInLoadOrder.Any(m => m.Name == "Dual Wield");
 
         public static bool enabled_RangeAnimalFramework;
 

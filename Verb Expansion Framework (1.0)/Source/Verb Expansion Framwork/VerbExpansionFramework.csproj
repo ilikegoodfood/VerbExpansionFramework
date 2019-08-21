@@ -36,12 +36,20 @@
       <HintPath>..\..\Assemblies\0Harmony.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="AnimalRangeUnlocker">
+      <HintPath>..\..\..\..\..\..\workshop\content\294100\1588397113\Assemblies\AnimalRangeUnlocker.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Assembly-CSharp">
       <HintPath>..\..\..\..\RimWorldWin64_Data\Managed\Assembly-CSharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="CombatExtended">
       <HintPath>..\..\..\CombatExtended (v1.0.1.5)\Assemblies\CombatExtended.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="CyberneticWarfare">
+      <HintPath>..\..\..\Cyborg Weaponry\Assemblies\CyberneticWarfare.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="DualWield">
