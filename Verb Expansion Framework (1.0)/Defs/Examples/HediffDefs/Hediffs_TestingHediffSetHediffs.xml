@@ -20,7 +20,7 @@
 					</li>
 				</capMods>
 				<statOffsets>
-					<NegotiationAbility>0.2</NegotiationAbility>
+					<NegotiationAbility>2</NegotiationAbility>
 					<TradePriceImprovement>0.1</TradePriceImprovement>
 				</statOffsets>
 			</li>

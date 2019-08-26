@@ -11,32 +11,19 @@ namespace VerbExpansionFramework
 {
     public class VEF_ThingComp_HediffSet : ThingComp
     {
-        public VEF_ThingComp_HediffSet(VEF_HediffSetDef hediffSetDef)
+        public VEF_ThingComp_HediffSet(Pawn pawn, VEF_HediffSetDef hediffSetDef)
         {
+            base.Initialize(null);
             this.hediffSetDef = hediffSetDef;
-
-            Pawn pawn2 = (Pawn)this.parent;
-            if (pawn2 != null)
-            {
-                pawn = pawn2;
-            }
-            else if (this.parent.holdingOwner?.Owner is Pawn_EquipmentTracker eqTracker)
-            {
-                pawn = eqTracker.pawn;
-            }
-            else if (this.parent.holdingOwner?.Owner is Pawn_ApparelTracker apTracker)
-            {
-                pawn = apTracker.pawn;
-            }
-
-            UpdateHediffSet();
+            this.parent = pawn;
+            this.pawn = pawn;
         }
 
         public Pawn Pawn
         {
             get
             {
-                return this.pawn;
+                return this.pawn ?? (this.pawn = (Pawn)this.parent);
             }
         }
 
@@ -49,24 +36,45 @@ namespace VerbExpansionFramework
 
         public void UpdateHediffSet()
         {
+            Log.Message("Updating Hediff Set");
+            if (Pawn == null)
+            {
+                Log.Message("Null Pawn");
+                return;
+            }
+            else if (Pawn.health.hediffSet.hediffs.NullOrEmpty() || this.hediffSetDef == null || this.hediffSetDef.hediffParts.NullOrEmpty())
+            {
+                Log.Message("Null Hediffs");
+                Pawn.AllComps.Remove(this);
+                return;
+            }
+            Log.Message("Passed Null Checks.");
+
             int count = 0;
+            
             foreach (HediffDef hediffDef in this.hediffSetDef.hediffParts)
             {
+                Log.Message("Iterating for HediffParts");
                 if (Pawn.health.hediffSet.hediffs.FirstOrDefault(h => h.def == hediffDef) != null)
                 {
+                    Log.Message("HedifPart Found");
                     count += 1;
                 }
             }
+            Log.Message("Completed iterating for parts.");
+
+            bool complete = count == hediffSetDef.hediffParts.Count;
+            Log.Message("Count = " + count + ", Complete = " + complete);
 
             HediffDef hediffDefIncomplete = hediffSetDef.setHediffIncomplete;
             HediffDef hediffDefComplete = hediffSetDef.setHediff;
             Hediff hediffIncomplete = Pawn.health.hediffSet.hediffs.FirstOrDefault(h => h.def == hediffDefIncomplete);
             Hediff hediffComplete = Pawn.health.hediffSet.hediffs.FirstOrDefault(h => h.def == hediffDefComplete);
-
-            bool complete = count == hediffSetDef.hediffParts.Count + 1;
+            Log.Message("Gathered Hediff Data and Hediffs");
 
             if (count == 0)
             {
+                Log.Message("Count = 0");
                 if (hediffIncomplete != null)
                 {
                     Pawn.health.RemoveHediff(hediffIncomplete);
@@ -79,6 +87,7 @@ namespace VerbExpansionFramework
             }
             else if (complete)
             {
+                Log.Message("Compete. Count = " + count);
                 if (hediffIncomplete != null)
                 {
                     Pawn.health.RemoveHediff(hediffIncomplete);
@@ -90,6 +99,7 @@ namespace VerbExpansionFramework
             }
             else
             {
+                Log.Message("Incomplete. Count =" + count);
                 if (hediffComplete != null)
                 {
                     Pawn.health.RemoveHediff(hediffComplete);
@@ -99,6 +109,8 @@ namespace VerbExpansionFramework
                     Pawn.health.AddHediff(hediffDefIncomplete);
                 }
             }
+            Log.Message("End.");
+            return;
         }
 
         private Pawn pawn;

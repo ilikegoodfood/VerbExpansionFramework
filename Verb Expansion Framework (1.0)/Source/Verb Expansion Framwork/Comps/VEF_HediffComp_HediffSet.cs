@@ -14,7 +14,7 @@ namespace VerbExpansionFramework
         {
             get
             {
-                return (VEF_HediffCompProperties_HediffSet)this.Props;
+                return (VEF_HediffCompProperties_HediffSet)this.props;
             }
         }
 
@@ -23,7 +23,7 @@ namespace VerbExpansionFramework
             base.CompPostMake();
             if (Pawn.AllComps.FirstOrDefault(c => c is VEF_ThingComp_HediffSet compHediffSet && compHediffSet.hediffSetDef == this.Props.hediffSetDef) == null)
             {
-                Pawn.AllComps.Add(new VEF_ThingComp_HediffSet(this.Props.hediffSetDef));
+                Pawn.AllComps.Add(new VEF_ThingComp_HediffSet(Pawn, this.Props.hediffSetDef));
             }
         }
     }

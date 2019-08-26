@@ -12,7 +12,7 @@ namespace VerbExpansionFramework
     {
         public VEF_HediffCompProperties_HediffSet()
         {
-            this.compClass = typeof(VEF_HediffCompProperties_HediffSet);
+            this.compClass = typeof(VEF_HediffComp_HediffSet);
         }
 
         public VEF_HediffSetDef hediffSetDef;
