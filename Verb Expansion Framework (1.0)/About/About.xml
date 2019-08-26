@@ -16,6 +16,7 @@ Features
 - Ranged Verbs from Hediffs display all of the appropriate interactions with the Brawler Trait (unhappy thought, 'Brawler has Ranged Weapon' warning in sidebar, and the Operations 'Add Bill' Menu will display the 'Brawler will be unhappy' warning for appropriate operations).
 - All bleeding-capable pawns have their total bleed rate multiplied by the new Bleed Rate Capacity.
 - Implements versions of Explosions, Extinguishers, and Flames that do not trigger camera shake. Provided by Ogliss.
-- Implements HediffDef and ThingDef versions of Smokepop Belt.
+- Implements HediffComp and ThingComp versions of Smokepop Belt.
+- Implements HediffComp HealthModifier (Legacy), HealthModifier Capacity and HealthModifierFactor Capacity.
 	</description>
 </ModMetaData>
