@@ -11,6 +11,7 @@
 				<verbs>
 					<li>
 						<verbClass>Verb_Shoot</verbClass>
+						<label>test body mounted cannon</label>
 						<accuracyTouch>0.7</accuracyTouch>
 						<accuracyShort>0.8</accuracyShort>
 						<accuracyMedium>0.9</accuracyMedium>
@@ -50,4 +51,52 @@
 			<partEfficiency>0.9</partEfficiency>
 		</addedPartProps>
 	</HediffDef>
+	
+	<!-- ===== Test Parts for HediffSet System ==== -->
+	<HediffDef ParentName="AddedBodyPartBase">
+		<defName>TestCaptainHooks_PegLeg</defName>
+		<label>test captain hook's pegleg</label>
+		<labelNoun>one of captain hook's peglegs</labelNoun>
+		<comps>
+			<li Class="VerbExpansionFramework.VEF_HediffCompProperties_HediffSet">
+				<hediffSetDef>TestCaptainHookSet</hediffSetDef>
+			</li>
+		</comps>
+		<addedPartProps>
+			<solid>true</solid>
+			<partEfficiency>0.60</partEfficiency>
+			<betterThanNatural>false</betterThanNatural>
+		</addedPartProps>
+		<spawnThingOnRemoved>WoodLog</spawnThingOnRemoved>
+	</HediffDef>
+
+	<HediffDef ParentName="AddedBodyPartBase">
+		<defName>TestCaptainHooks_Hook</defName>
+		<label>test captain hook's hook</label>
+		<labelNoun>one of captain hook's hooks</labelNoun>
+		<comps>
+			<li Class="HediffCompProperties_VerbGiver">
+				<tools>
+					<li>
+						<label>fist</label>
+						<capacities>
+							<li>Blunt</li>
+						</capacities>
+						<power>8.2</power> <!-- Same as natural fist -->
+						<cooldownTime>2</cooldownTime>
+					</li>
+				</tools>
+			</li>
+			<li Class="VerbExpansionFramework.VEF_HediffCompProperties_HediffSet">
+				<hediffSetDef>TestCaptainHookSet</hediffSetDef>
+			</li>
+		</comps>
+		<spawnThingOnRemoved>SimpleProstheticArm</spawnThingOnRemoved>
+		<addedPartProps>
+			<solid>true</solid>
+			<partEfficiency>0.50</partEfficiency>
+			<betterThanNatural>false</betterThanNatural>
+		</addedPartProps>
+	</HediffDef>
+
 </Defs>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<Defs>
+
+	<VerbExpansionFramework.VEF_HediffSetDef>
+		<defName>TestCaptainHookSet</defName>
+		<setHediff>TestCaptainHookComplete</setHediff>
+		<setHediffIncomplete>TestCaptainHookIncomplete</setHediffIncomplete>
+		<hediffParts>
+			<li>TestCaptainHooks_PegLeg</li>
+			<li>TestCaptainHooks_Hook</li>
+		</hediffParts>
+	</VerbExpansionFramework.VEF_HediffSetDef>
+
+</Defs>
