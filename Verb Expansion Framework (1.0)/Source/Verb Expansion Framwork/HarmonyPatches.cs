@@ -46,6 +46,10 @@ namespace VerbExpansionFramework
             harmony.Patch(original: AccessTools.Method(type: typeof(SmokepopBelt), name: nameof(SmokepopBelt.CheckPreAbsorbDamage)), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(SmokepopBelt_CheckPreAbsorbDamagePostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(Targeter), name: "GetTargetingVerb"), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(Targeter_GetTargetingVerbPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(ThoughtWorker_IsCarryingRangedWeapon), name: "CurrentStateInternal"), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(ThoughtWorker_IsCarryingRangedWeapon_CurrentStateInternalPostfix)));
+            harmony.Patch(original: AccessTools.Method(type: typeof(Verb), name: nameof(Verb.CanHitTargetFrom)), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(Verb_CanHitTargetFromPostfix)));
+
+            //  UpdateHediffSetPostfix (instrcucts HediffSets on pawn to update when a hediff changed)
+            harmony.Patch(original: AccessTools.Method(type: typeof(HediffSet), name: nameof(HediffSet.DirtyCache)), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(UpdateHediffSetPostfix)));
 
             // UpdateRangedVerbPostfix (forces update to ranged verbs when a change to a possible verb source is detected)
             harmony.Patch(original: AccessTools.Method(type: typeof(HediffSet), name: nameof(HediffSet.DirtyCache)), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(UpdateRangedVerbsPostfix)));
@@ -335,12 +339,21 @@ namespace VerbExpansionFramework
         [HarmonyPriority(1200)]
         private static void Pawn_TryGetAttackVerbPostfix(Pawn __instance, ref Verb __result, ref Thing target)
         {
-            if (__instance.TryGetComp<VEF_Comp_Pawn_RangedVerbs>() != null)
+            if (__instance?.TryGetComp<VEF_Comp_Pawn_RangedVerbs>() != null)
             {
                 Verb tempVerb = __instance.TryGetComp<VEF_Comp_Pawn_RangedVerbs>().TryGetRangedVerb(target);
                 if (tempVerb != null)
                 {
-                    __result = tempVerb;
+                    if (tempVerb.CanHitTargetFrom(__instance.Position, target))
+                    {
+                        __result = tempVerb;
+                        return;
+                    }
+                    else
+                    {
+                        __result = __instance.meleeVerbs.TryGetMeleeVerb(target);
+                        return;
+                    }
                 }
             }
             return;
@@ -485,7 +498,7 @@ namespace VerbExpansionFramework
         {
             if (!dinfo.Def.isExplosive && dinfo.Def.harmsHealth && dinfo.Def.ExternalViolenceFor(__instance.Wearer))
             {
-                if (dinfo.Instigator is Pawn instigatorPawn && instigatorPawn.GetComp<VEF_Comp_Pawn_RangedVerbs>().CurRangedVerb != null && !(dinfo.Weapon != null && instigatorPawn.GetComp<VEF_Comp_Pawn_RangedVerbs>().CurRangedVerb.EquipmentSource != null && dinfo.Weapon == instigatorPawn.GetComp<VEF_Comp_Pawn_RangedVerbs>().CurRangedVerb.EquipmentSource.def) && instigatorPawn.Position.DistanceTo(__instance.Wearer.Position) > 1f)
+                if (dinfo.Instigator is Pawn instigatorPawn && instigatorPawn.GetComp<VEF_Comp_Pawn_RangedVerbs>().CurRangedVerb != null && !(dinfo.Weapon != null && instigatorPawn.GetComp<VEF_Comp_Pawn_RangedVerbs>().CurRangedVerb.EquipmentSource != null && dinfo.Weapon == instigatorPawn.GetComp<VEF_Comp_Pawn_RangedVerbs>().CurRangedVerb.EquipmentSource.def) && !instigatorPawn.GetComp<VEF_Comp_Pawn_RangedVerbs>().CurRangedVerb.IsMeleeAttack)
                 {
                     IntVec3 position = __instance.Wearer.Position;
                     Map map = __instance.Wearer.Map;
@@ -531,6 +544,15 @@ namespace VerbExpansionFramework
             return;
         }
 
+        private static void UpdateHediffSetPostfix(HediffSet __instance)
+        {
+            foreach (VEF_ThingComp_HediffSet hediffSetComp in __instance.pawn.AllComps.FindAll(c => c.GetType() == typeof(VEF_ThingComp_HediffSet)))
+            {
+                hediffSetComp.UpdateHediffSet();
+            }
+            
+        }
+
         private static void UpdateRangedVerbsPostfix(object __instance)
         {
             Pawn pawn;
@@ -554,6 +576,15 @@ namespace VerbExpansionFramework
                     comp.UpdateRangedVerbs();
                     comp.TryGetRangedVerb(pawn.mindState.enemyTarget);
                 }
+            }
+        }
+
+        private static void Verb_CanHitTargetFromPostfix(Verb __instance, LocalTargetInfo targ, ref bool __result)
+        {
+            if (__instance.CasterIsPawn && __instance?.caster?.TryGetComp<VEF_ThingComp_ShieldDefense>() is VEF_ThingComp_ShieldDefense comp && comp.ShieldState == ShieldState.Active && targ.Thing != __instance.caster)
+            {
+                __result = comp.AllowVerbCast(__instance.caster as Pawn, targ, __instance);
+                return;
             }
         }
 
