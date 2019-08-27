@@ -26,6 +26,7 @@ namespace VerbExpansionFramework
         //Fields
         //Core
         public static FieldInfo FI_Pawn_HealthTracker_pawn = AccessTools.Field(type: typeof(Pawn_HealthTracker), name: "pawn");
+        public static FieldInfo FI_Projectile_WeaponDamageMultiplier = AccessTools.Field(type: typeof(Projectile), name: "weaponDamageMultiplier");
 
         //Methods
         //Core
