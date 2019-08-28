@@ -340,21 +340,15 @@ namespace VerbExpansionFramework
         [HarmonyPriority(1200)]
         private static void Pawn_TryGetAttackVerbPostfix(Pawn __instance, ref Verb __result, ref Thing target)
         {
-            if (__instance?.TryGetComp<VEF_Comp_Pawn_RangedVerbs>() != null)
+            if (__instance?.TryGetComp<VEF_Comp_Pawn_RangedVerbs>() is VEF_Comp_Pawn_RangedVerbs comp)
             {
-                Verb tempVerb = __instance.TryGetComp<VEF_Comp_Pawn_RangedVerbs>().TryGetRangedVerb(target);
-                if (tempVerb != null)
+                if (comp.TryGetRangedVerb(target) is Verb verb)
                 {
-                    if (tempVerb.CanHitTargetFrom(__instance.Position, target))
-                    {
-                        __result = tempVerb;
-                        return;
-                    }
-                    else
-                    {
-                        __result = __instance.meleeVerbs.TryGetMeleeVerb(target);
-                        return;
-                    }
+                    __result = verb;
+                }
+                else if (__result == null)
+                {
+                    __result = __instance.meleeVerbs.TryGetMeleeVerb(target);
                 }
             }
             return;
@@ -473,6 +467,7 @@ namespace VerbExpansionFramework
                     {
                         hediff.TryGetComp<VEF_HediffComp_SmokepopDefense>().TryTriggerSmokepopDefense(dinfo);
                     }
+
                     if (VEF_ModCompatibilityCheck.enabled_SmokepopDefenseFramework)
                     {
                         try
@@ -499,7 +494,7 @@ namespace VerbExpansionFramework
         {
             if (!dinfo.Def.isExplosive && dinfo.Def.harmsHealth && dinfo.Def.ExternalViolenceFor(__instance.Wearer))
             {
-                if (dinfo.Instigator is Pawn instigatorPawn && instigatorPawn.GetComp<VEF_Comp_Pawn_RangedVerbs>().CurRangedVerb != null && !(dinfo.Weapon != null && instigatorPawn.GetComp<VEF_Comp_Pawn_RangedVerbs>().CurRangedVerb.EquipmentSource != null && dinfo.Weapon == instigatorPawn.GetComp<VEF_Comp_Pawn_RangedVerbs>().CurRangedVerb.EquipmentSource.def) && !instigatorPawn.GetComp<VEF_Comp_Pawn_RangedVerbs>().CurRangedVerb.IsMeleeAttack)
+                if (dinfo.Instigator is Pawn instigatorPawn && instigatorPawn.TryGetComp< VEF_Comp_Pawn_RangedVerbs>() is VEF_Comp_Pawn_RangedVerbs comp && comp.CurRangedVerb is Verb verb && !(dinfo.Weapon != null && verb.EquipmentSource != null && dinfo.Weapon == verb.EquipmentSource.def) && !verb.IsMeleeAttack)
                 {
                     IntVec3 position = __instance.Wearer.Position;
                     Map map = __instance.Wearer.Map;
@@ -516,12 +511,11 @@ namespace VerbExpansionFramework
 
         private static void Targeter_GetTargetingVerbPostfix(Pawn pawn, ref Verb __result)
         {
-            if (pawn.TryGetComp<VEF_Comp_Pawn_RangedVerbs>() != null)
+            if (pawn.TryGetComp<VEF_Comp_Pawn_RangedVerbs>() is VEF_Comp_Pawn_RangedVerbs comp)
             {
-                Verb tempVerb = pawn.TryGetComp<VEF_Comp_Pawn_RangedVerbs>().TryGetRangedVerb(pawn.mindState.enemyTarget);
-                if (tempVerb != null)
+                if (comp.TryGetRangedVerb(pawn.mindState.enemyTarget) is Verb verb)
                 {
-                    __result = tempVerb;
+                    __result = verb;
                 }
             }
             return;
@@ -584,7 +578,7 @@ namespace VerbExpansionFramework
         {
             if (__result == true && __instance.CasterIsPawn && __instance.caster.TryGetComp<VEF_ThingComp_ShieldDefense>() is VEF_ThingComp_ShieldDefense comp && comp.ShieldState == ShieldState.Active && targ.Thing != __instance.caster)
             {
-                __result = comp.AllowVerbCast(__instance.caster as Pawn, targ, __instance);
+                __result = comp.AllowVerbCast(__instance.CasterPawn, targ, __instance);
                 return;
             }
         }
@@ -610,7 +604,8 @@ namespace VerbExpansionFramework
                         labelIndex = i;
                     }
                 }
-                if (!complete && instructionList[i].opcode == OpCodes.Ldloc_0 && instructionList[i+1].opcode == OpCodes.Ldarg_3)
+
+                if (!complete && instructionList[i].opcode == OpCodes.Ldloc_0 && instructionList[i + 1].opcode == OpCodes.Ldarg_3)
                 {
                     yield return new CodeInstruction(opcode: OpCodes.Ldarg_3);
                     yield return new CodeInstruction(opcode: OpCodes.Ldfld, operand: FI_HediffComp_parent);

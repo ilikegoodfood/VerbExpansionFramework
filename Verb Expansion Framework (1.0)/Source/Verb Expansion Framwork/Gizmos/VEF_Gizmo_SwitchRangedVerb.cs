@@ -15,6 +15,7 @@ namespace VerbExpansionFramework
         public VEF_Gizmo_SwitchRangedVerb(Pawn pawn)
         {
             this.pawn = pawn;
+            this.comp = pawn.GetComp<VEF_Comp_Pawn_RangedVerbs>();
             UpdateCurRangedVerb();
         }
 
@@ -22,7 +23,7 @@ namespace VerbExpansionFramework
         {
             get
             {
-                return this.pawn.GetComp<VEF_Comp_Pawn_RangedVerbs>().visible;
+                return this.comp.visible;
             }
         }
 
@@ -114,7 +115,7 @@ namespace VerbExpansionFramework
                 void onSelectVerb()
                 {
                     this.verb = verbEntry.verb;
-                    pawn.GetComp<VEF_Comp_Pawn_RangedVerbs>().SetCurRangedVerb(this.verb, null);
+                    this.comp.SetCurRangedVerb(this.verb, null);
 
                     Find.Targeter.StopTargeting();
                 }
@@ -141,12 +142,12 @@ namespace VerbExpansionFramework
 
         private void UpdateCurRangedVerb()
         {
-            this.verb = this.pawn.GetComp<VEF_Comp_Pawn_RangedVerbs>().TryGetRangedVerb(null);
+            this.verb = this.comp.TryGetRangedVerb(null);
         }
 
         private void UpdateAllRangedVerbs()
         {
-            this.allRangedVerbs = this.pawn.GetComp<VEF_Comp_Pawn_RangedVerbs>().GetRangedVerbs;
+            this.allRangedVerbs = this.comp.GetRangedVerbs;
         }
 
         private List<Pawn> GetSelectedPawns()
@@ -160,6 +161,8 @@ namespace VerbExpansionFramework
         }
 
         private Pawn pawn;
+
+        private VEF_Comp_Pawn_RangedVerbs comp;
 
         private List<VerbEntry> allRangedVerbs;
 

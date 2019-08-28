@@ -47,7 +47,7 @@ namespace VerbExpansionFramework
             {
                 if (!dinfo.Def.isExplosive && dinfo.Def.harmsHealth && dinfo.Def.ExternalViolenceFor(pawn))
                 {
-                    if (dinfo.Instigator is Pawn instigatorPawn && instigatorPawn.GetComp<VEF_Comp_Pawn_RangedVerbs>().CurRangedVerb != null && !instigatorPawn.GetComp<VEF_Comp_Pawn_RangedVerbs>().CurRangedVerb.IsMeleeAttack)
+                    if (dinfo.Instigator is Pawn instigatorPawn && instigatorPawn.GetComp<VEF_Comp_Pawn_RangedVerbs>() is VEF_Comp_Pawn_RangedVerbs comp && comp.CurRangedVerb is Verb verb && !verb.IsMeleeAttack)
                     {
                         IntVec3 position = pawn.Position;
                         Map map = pawn.Map;

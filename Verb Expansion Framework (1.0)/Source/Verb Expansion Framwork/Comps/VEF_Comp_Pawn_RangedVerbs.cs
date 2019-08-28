@@ -108,14 +108,14 @@ namespace VerbExpansionFramework
                     {
                         if (verb.HediffCompSource != null)
                         {
-                            command_VerbTarget.defaultDesc = (verb.verbProps.label == verb.HediffSource.def.label) ? verb.HediffCompSource.Def.LabelCap + ": " + verb.HediffSource.def.description.CapitalizeFirst() : verb.verbProps.label + " :: " + verb.HediffSource.LabelCap + ": " + verb.HediffSource.def.description.CapitalizeFirst();
+                            command_VerbTarget.defaultDesc = (verb.verbProps.label == verb.HediffSource.def.label) ? verb.HediffSource.def.LabelCap + ": " + verb.HediffSource.def.description.CapitalizeFirst() : verb.verbProps.label + " :: " + verb.HediffSource.LabelCap + ": " + verb.HediffSource.def.description.CapitalizeFirst();
                         }
                         else
                         {
                             command_VerbTarget.defaultDesc = (verb.verbProps.label == verb.CasterPawn.def.label) ? "Biological weapon of " + verb.CasterPawn.def.label + ": " + verb.CasterPawn.def.description.CapitalizeFirst() : CurRangedVerb.verbProps.label.CapitalizeFirst() + " :: Biological weapon of " + verb.CasterPawn.def.label + ": " + verb.CasterPawn.def.description.CapitalizeFirst();
                         }
                         tempIcon = verb.GetProjectile().uiIcon;
-                        if (tempIcon != BaseContent.BadTex || tempIcon != null)
+                        if (tempIcon != null)
                         {
                             command_VerbTarget.icon = tempIcon;
                         }
