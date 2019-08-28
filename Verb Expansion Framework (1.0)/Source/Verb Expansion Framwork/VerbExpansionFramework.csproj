@@ -94,7 +94,7 @@
     <Compile Include="Comps\VEF_ThingCompProperties_ShieldDefense.cs" />
     <Compile Include="Comps\VEF_ThingComp_ShieldDefense.cs" />
     <Compile Include="Comps\VEF_ThingComp_HediffSet.cs" />
-    <Compile Include="VEF_Verb_ShootBody.cs" />
+    <Compile Include="Verbs\VEF_Verb_ShootBody.cs" />
     <None Include="OldCode\VEF_AttackTargetFinder.cs" />
     <Compile Include="Gizmos\VEF_Gizmo_EnergyShieldStatus.cs" />
     <Compile Include="Comps\VEF_HediffCompProperties_HediffSet.cs" />
@@ -104,9 +104,7 @@
     <Compile Include="HarmonyPatches.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Verbs\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

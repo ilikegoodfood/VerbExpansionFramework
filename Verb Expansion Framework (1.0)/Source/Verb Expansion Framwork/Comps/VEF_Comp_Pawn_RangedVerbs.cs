@@ -206,8 +206,8 @@ namespace VerbExpansionFramework
                         else
                         {
                             ThingDef verbProjectile = verb.GetProjectile();
-                            int projectileDamageAmount = (verb.EquipmentCompSource == null) ? verbProjectile.projectile.GetDamageAmount(1f) : verbProjectile.projectile.GetDamageAmount(verb.EquipmentSource);
-                            List<float> accuracyList = (verb.EquipmentCompSource == null) ? new List<float>() { verb.verbProps.accuracyLong, verb.verbProps.accuracyMedium, verb.verbProps.accuracyShort } : new List<float>() { verb.EquipmentCompSource.parent.GetStatValue(StatDefOf.AccuracyLong), verb.EquipmentCompSource.parent.GetStatValue(StatDefOf.AccuracyMedium), verb.EquipmentCompSource.parent.GetStatValue(StatDefOf.AccuracyShort) };
+                            int projectileDamageAmount = (verb.EquipmentSource == null) ? verbProjectile.projectile.GetDamageAmount(1f) : verbProjectile.projectile.GetDamageAmount(verb.EquipmentSource);
+                            List<float> accuracyList = (verb.EquipmentSource == null) ? new List<float>() { verb.verbProps.accuracyLong, verb.verbProps.accuracyMedium, verb.verbProps.accuracyShort } : new List<float>() { verb.EquipmentCompSource.parent.GetStatValue(StatDefOf.AccuracyLong), verb.EquipmentCompSource.parent.GetStatValue(StatDefOf.AccuracyMedium), verb.EquipmentCompSource.parent.GetStatValue(StatDefOf.AccuracyShort) };
                             accuracyList.Sort();
                             accuracyList.Reverse();
                             float accuracyValue = (accuracyList[0] + accuracyList[1]) / 2;
@@ -232,7 +232,7 @@ namespace VerbExpansionFramework
                         else
                         {
                             ThingDef verbProjectile = verb.GetProjectile();
-                            int projectileDamageAmount = (verb.EquipmentCompSource == null) ? verbProjectile.projectile.GetDamageAmount(1f) : verbProjectile.projectile.GetDamageAmount(verb.EquipmentSource);
+                            int projectileDamageAmount = (verb.EquipmentSource == null) ? verbProjectile.projectile.GetDamageAmount(1f) : verbProjectile.projectile.GetDamageAmount(verb.EquipmentSource);
                             float accuracyValue = Verse.ShotReport.HitReportFor(Pawn, verb, target).TotalEstimatedHitChance;
                             int burstShotCount = (verb.verbProps.burstShotCount == 0) ? 1 : verb.verbProps.burstShotCount;
                             float fullCycleTime = verb.verbProps.AdjustedFullCycleTime(verb, this.Pawn);

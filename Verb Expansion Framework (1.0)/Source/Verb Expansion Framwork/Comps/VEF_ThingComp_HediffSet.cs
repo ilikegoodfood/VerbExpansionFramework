@@ -97,7 +97,6 @@ namespace VerbExpansionFramework
                     Pawn.health.AddHediff(hediffDefIncomplete);
                 }
             }
-            Log.Message("End.");
             return;
         }
 

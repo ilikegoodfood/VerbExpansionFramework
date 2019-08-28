@@ -47,6 +47,7 @@ namespace VerbExpansionFramework
             harmony.Patch(original: AccessTools.Method(type: typeof(Targeter), name: "GetTargetingVerb"), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(Targeter_GetTargetingVerbPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(ThoughtWorker_IsCarryingRangedWeapon), name: "CurrentStateInternal"), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(ThoughtWorker_IsCarryingRangedWeapon_CurrentStateInternalPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(Verb), name: nameof(Verb.CanHitTargetFrom)), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(Verb_CanHitTargetFromPostfix)));
+            harmony.Patch(original: AccessTools.Method(type: typeof(VerbProperties), name: nameof(VerbProperties.GetDamageFactorFor), parameters: new Type[] { typeof(Tool), typeof(Pawn), typeof(HediffComp_VerbGiver) }), prefix: null, postfix: null, transpiler: new HarmonyMethod(type: patchType, name: nameof(VerbProperties_GetDamageFactorForTranspiler)));
 
             //  UpdateHediffSetPostfix (instrcucts HediffSets on pawn to update when a hediff changed)
             harmony.Patch(original: AccessTools.Method(type: typeof(HediffSet), name: nameof(HediffSet.DirtyCache)), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(UpdateHediffSetPostfix)));
@@ -270,11 +271,11 @@ namespace VerbExpansionFramework
 
         private static void JobDriver_Wait_CheckForAutoAttackPostfix(JobDriver_Wait __instance)
         {
-            if (__instance.pawn.Downed || __instance.pawn.stances.FullBodyBusy || __instance.pawn.story != null)
+            if (__instance.pawn.Faction != null || __instance.pawn.Downed || __instance.pawn.stances.FullBodyBusy)
             {
                 return;
             }
-            if (((__instance.pawn.story != null && !__instance.pawn.story.WorkTagIsDisabled(WorkTags.Violent)) || __instance.pawn.story == null) && __instance.job.def == JobDefOf.Wait_Combat && (__instance.pawn.drafter == null || __instance.pawn.drafter.FireAtWill))
+            if ((__instance.pawn.story == null || !__instance.pawn.story.WorkTagIsDisabled(WorkTags.Violent)) && __instance.job.def == JobDefOf.Wait_Combat && (__instance.pawn.drafter == null || __instance.pawn.drafter.FireAtWill))
             {
                 Verb currentEffectiveVerb = __instance.pawn.CurrentEffectiveVerb;
                 if (currentEffectiveVerb != null && !currentEffectiveVerb.verbProps.IsMeleeAttack)
@@ -581,10 +582,43 @@ namespace VerbExpansionFramework
 
         private static void Verb_CanHitTargetFromPostfix(Verb __instance, LocalTargetInfo targ, ref bool __result)
         {
-            if (__instance.CasterIsPawn && __instance?.caster?.TryGetComp<VEF_ThingComp_ShieldDefense>() is VEF_ThingComp_ShieldDefense comp && comp.ShieldState == ShieldState.Active && targ.Thing != __instance.caster)
+            if (__result == true && __instance.CasterIsPawn && __instance.caster.TryGetComp<VEF_ThingComp_ShieldDefense>() is VEF_ThingComp_ShieldDefense comp && comp.ShieldState == ShieldState.Active && targ.Thing != __instance.caster)
             {
                 __result = comp.AllowVerbCast(__instance.caster as Pawn, targ, __instance);
                 return;
+            }
+        }
+
+        private static IEnumerable<CodeInstruction> VerbProperties_GetDamageFactorForTranspiler(IEnumerable<CodeInstruction> codeInstructions)
+        {
+            List<CodeInstruction> instructionList = codeInstructions.ToList();
+
+            FieldInfo FI_HediffComp_parent = AccessTools.Field(typeof(HediffComp), name: nameof(HediffComp.parent));
+            MethodBase PG_Hediff_Part = AccessTools.Property(type: typeof(Hediff), name: nameof(Hediff.Part)).GetGetMethod();
+
+            int count = 0;
+            int labelIndex = -1;
+            bool complete = false;
+
+            for (int i = 0; i < instructionList.Count; i++)
+            {
+                if (labelIndex == -1 && instructionList[i].opcode == OpCodes.Brfalse)
+                {
+                    count += 1;
+                    if (count == 2)
+                    {
+                        labelIndex = i;
+                    }
+                }
+                if (!complete && instructionList[i].opcode == OpCodes.Ldloc_0 && instructionList[i+1].opcode == OpCodes.Ldarg_3)
+                {
+                    yield return new CodeInstruction(opcode: OpCodes.Ldarg_3);
+                    yield return new CodeInstruction(opcode: OpCodes.Ldfld, operand: FI_HediffComp_parent);
+                    yield return new CodeInstruction(opcode: OpCodes.Callvirt, operand: PG_Hediff_Part);
+                    yield return new CodeInstruction(opcode: OpCodes.Brfalse, operand: instructionList[labelIndex].operand);
+                    complete = true;
+                }
+                yield return instructionList[i];
             }
         }
 
