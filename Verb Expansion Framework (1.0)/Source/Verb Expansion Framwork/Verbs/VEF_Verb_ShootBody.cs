@@ -46,11 +46,6 @@ namespace VerbExpansionFramework
             }
             Vector3 drawPos = this.caster.DrawPos;
             Projectile projectile2 = (Projectile)GenSpawn.Spawn(projectile, shootLine.Source, this.caster.Map, WipeMode.Vanish);
-            if (this.CasterIsPawn)
-            {
-                float weaponDamageMultiplier = (float)VEF_ReflectionData.FI_Projectile_WeaponDamageMultiplier.GetValue(projectile2);
-                VEF_ReflectionData.FI_Projectile_WeaponDamageMultiplier.SetValue(projectile2, weaponDamageMultiplier + ((this.caster.def.race.baseBodySize - 1f) * 0.5f));
-            }
             if (this.verbProps.forcedMissRadius > 0.5f)
             {
                 float num = VerbUtility.CalculateAdjustedForcedMiss(this.verbProps.forcedMissRadius, this.currentTarget.Cell - this.caster.Position);
@@ -124,6 +119,10 @@ namespace VerbExpansionFramework
             {
                 projectile2.Launch(launcher, drawPos, shootLine.Dest, this.currentTarget, projectileHitFlags4, equipment, targetCoverDef);
                 this.ThrowDebugText("Hit\nDest", shootLine.Dest);
+            }
+            if (this.CasterIsPawn)
+            {
+                VEF_ReflectionData.FI_Bullet_WeaponDamageMultiplier.SetValue(projectile2, (float)VEF_ReflectionData.FI_Bullet_WeaponDamageMultiplier.GetValue(projectile2) + ((this.caster.def.race.baseBodySize - 1f) * 0.5f));
             }
             return true;
         }
