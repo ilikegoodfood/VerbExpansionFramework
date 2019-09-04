@@ -6,7 +6,7 @@ using RimWorld;
 using Verse;
 using UnityEngine;
 
-namespace VerbExpansionFramework.Damage_Workers
+namespace VerbExpansionFramework
 {
     class VEF_DamageWorker_ExtinguishNoShake : DamageWorker
     {

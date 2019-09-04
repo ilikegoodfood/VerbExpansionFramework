@@ -53,7 +53,7 @@ namespace VerbExpansionFramework
                         Map map = pawn.Map;
                         DamageDef smoke = DamageDefOf.Smoke;
                         ThingDef gas_Smoke = ThingDefOf.Gas_Smoke;
-                        GenExplosion.DoExplosion(position, map, this.Props.smokeRadius, smoke, pawn as Thing, -1, -1f, null, null, null, null, gas_Smoke, 1f, 1, false, null, 0f, 1, 0f, false);
+                        GenExplosion.DoExplosion(position, map, this.Props.smokeRadius, smoke, pawn as Thing, -1, -1f, this.Props.smokepopSound, null, null, null, gas_Smoke, 1f, 1, false, null, 0f, 1, 0f, false);
                         this.lastUsedSmoke = Find.TickManager.TicksGame;
                     }
                     if (dinfo.Instigator as Building != null && dinfo.Weapon != null && dinfo.Weapon.IsRangedWeapon)
@@ -62,7 +62,7 @@ namespace VerbExpansionFramework
                         Map map = pawn.Map;
                         DamageDef smoke = DamageDefOf.Smoke;
                         ThingDef gas_Smoke = ThingDefOf.Gas_Smoke;
-                        GenExplosion.DoExplosion(position, map, this.Props.smokeRadius, smoke, pawn as Thing, -1, -1f, null, null, null, null, gas_Smoke, 1f, 1, false, null, 0f, 1, 0f, false);
+                        GenExplosion.DoExplosion(position, map, this.Props.smokeRadius, smoke, pawn as Thing, -1, -1f, this.Props.smokepopSound, null, null, null, gas_Smoke, 1f, 1, false, null, 0f, 1, 0f, false);
                         this.lastUsedSmoke = Find.TickManager.TicksGame;
                     }
                 }

@@ -80,14 +80,46 @@ namespace VerbExpansionFramework
             if (verb != null)
             {
                 verb.verbProps.DrawRadiusRing(this.pawn.Position);
+                if (verb.verbProps is VEF_VerbProperties_Explode verbPropsExplode)
+                {
+                    verbPropsExplode.DrawExplodeRadiusRing(this.pawn.Position);
+                }                
                 if (!groupedVerbs.NullOrEmpty<Verb>())
                 {
                     foreach (Verb verb in groupedVerbs)
                     {
-                        verb.verbProps.DrawRadiusRing(verb.caster.Position);
+                        if (!verb.CasterPawn.story.WorkTagIsDisabled(WorkTags.Violent))
+                        {
+                            verb.verbProps.DrawRadiusRing(verb.caster.Position);
+                            if (verb.verbProps is VEF_VerbProperties_Explode verbPropsExplode2)
+                            {
+                                verbPropsExplode2.DrawExplodeRadiusRing(verb.caster.Position);
+                            }
+                        }
                     }
                 }
             }
+        }
+
+        public override void MergeWith(Gizmo other)
+        {
+            base.MergeWith(other);
+            VEF_Gizmo_SwitchRangedVerb switchRangedVerb = other as VEF_Gizmo_SwitchRangedVerb;
+            if (switchRangedVerb == null)
+            {
+                Log.ErrorOnce("Tried to merge Command_VerbTarget with unexpected type", 73406263, false);
+                return;
+            }
+            if (this.groupedVerbs == null)
+            {
+                this.groupedVerbs = new List<Verb>();
+            }
+            this.groupedVerbs.Add(switchRangedVerb.verb);
+            if (switchRangedVerb.groupedVerbs != null)
+            {
+                this.groupedVerbs.AddRange(switchRangedVerb.groupedVerbs);
+            }
+            List<object> selectedPawns = Find.Selector.SelectedObjectsListForReading.FindAll(o => o.GetType() == typeof(Pawn));
         }
 
         public override void ProcessInput(Event ev)

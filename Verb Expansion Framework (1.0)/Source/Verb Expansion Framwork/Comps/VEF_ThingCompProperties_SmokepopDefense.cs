@@ -18,5 +18,7 @@ namespace VerbExpansionFramework
         public int rechargeTime = 1;
 
         public float smokeRadius = 3f;
+
+        public SoundDef smokepopSound;
     }
 }

@@ -30,8 +30,9 @@ namespace VerbExpansionFramework
             harmony.Patch(original: AccessTools.Method(type: typeof(AttackTargetsCache), name: nameof(AttackTargetsCache.GetPotentialTargetsFor)), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(AttackTargetsCache_GetPotentialTargetsForPostfix)));
             harmony.Patch(original: AccessTools.Constructor(type: typeof(BattleLogEntry_RangedFire), parameters: new Type[] { typeof(Thing), typeof(Thing), typeof(ThingDef), typeof(ThingDef), typeof(bool) }), prefix: new HarmonyMethod(type: patchType, name: nameof(BattleLogEntry_WeaponDefGrammarPrefix)), postfix: null);
             harmony.Patch(original: AccessTools.Constructor(type: typeof(BattleLogEntry_RangedImpact), parameters: new Type[] { typeof(Thing), typeof(Thing), typeof(Thing), typeof(ThingDef), typeof(ThingDef), typeof(ThingDef) }), prefix: new HarmonyMethod(type: patchType, name: nameof(BattleLogEntry_WeaponDefGrammarPrefix)), postfix: null);
-            //harmony.Patch(original: AccessTools.Method(type: typeof(Bullet), name: "Impact"), prefix: null, postfix: null, transpiler: new HarmonyMethod(type: patchType, name: nameof(Bullet_ImpactTranspiler)));
             harmony.Patch(original: AccessTools.Method(type: typeof(Command_VerbTarget), name: nameof(Command_VerbTarget.ProcessInput)), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(Command_VerbTarget_ProcessInputPostfix)));
+            harmony.Patch(original: AccessTools.Method(type: typeof(Command_VerbTarget), name: nameof(Command_VerbTarget.GizmoUpdateOnMouseover)), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(Command_VerbTarget_GizmoUpdateOnMousoverPostfix)));
+            harmony.Patch(original: AccessTools.Method(type: typeof(Explosion), name: "AffectCell"), prefix: new HarmonyMethod(type: patchType, name: nameof(Explsoion_AffectCellPrefix)), postfix: null);
             harmony.Patch(original: AccessTools.Method(type: typeof(FloatMenuUtility), name: nameof(FloatMenuUtility.GetAttackAction)), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(FloatMenuUtility_GetAttackActionPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(HealthCardUtility), name: "GenerateSurgeryOption"), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(HealthCardUtility_GenerateSurgeryOptionPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(HediffSet), name: "CalculateBleedRate"), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(HediffSet_CalculateBleedRatePostfix)));
@@ -46,9 +47,10 @@ namespace VerbExpansionFramework
             harmony.Patch(original: AccessTools.Method(type: typeof(Pawn_HealthTracker), name: nameof(Pawn_HealthTracker.PreApplyDamage)), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(Pawn_HealthTracker_PreApplyDamagePostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(SmokepopBelt), name: nameof(SmokepopBelt.CheckPreAbsorbDamage)), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(SmokepopBelt_CheckPreAbsorbDamagePostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(Targeter), name: "GetTargetingVerb"), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(Targeter_GetTargetingVerbPostfix)));
+            harmony.Patch(original: AccessTools.Method(type: typeof(Targeter), name: nameof(Targeter.TargeterUpdate)), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(Targeter_TargeterUpdatePostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(ThoughtWorker_IsCarryingRangedWeapon), name: "CurrentStateInternal"), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(ThoughtWorker_IsCarryingRangedWeapon_CurrentStateInternalPostfix)));
-            harmony.Patch(original: AccessTools.Method(type: typeof(Verb), name: nameof(Verb.CanHitTargetFrom)), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(Verb_CanHitTargetFromPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(VerbProperties), name: nameof(VerbProperties.GetDamageFactorFor), parameters: new Type[] { typeof(Tool), typeof(Pawn), typeof(HediffComp_VerbGiver) }), prefix: null, postfix: null, transpiler: new HarmonyMethod(type: patchType, name: nameof(VerbProperties_GetDamageFactorForTranspiler)));
+            harmony.Patch(original: AccessTools.Method(type: typeof(VerbUtility), name: nameof(VerbUtility.AllowAdjacentShot)), prefix: null, postfix: new HarmonyMethod(type:patchType, name: nameof(VerbUtility_AllowAdjacentShotPostfix)));
 
             //  UpdateHediffSetPostfix (instrcucts HediffSets on pawn to update when a hediff changed)
             harmony.Patch(original: AccessTools.Method(type: typeof(HediffSet), name: nameof(HediffSet.DirtyCache)), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(UpdateHediffSetPostfix)));
@@ -223,25 +225,6 @@ namespace VerbExpansionFramework
             }
         }
 
-        /*private static IEnumerable<CodeInstruction> Bullet_ImpactTranspiler(IEnumerable<CodeInstruction> codeInstructions)
-        {
-            FieldInfo FI_Projectile_damageAmountBase = AccessTools.Field(type: typeof(Projectile), name: "damageAmountBase");
-
-            List<CodeInstruction> instructionList = codeInstructions.ToList();
-            bool start = false;
-
-            for (int i = 0; i < instructionList.Count; i++)
-            {
-                yield return instructionList[i];
-
-                if (!start && instructionList[i].opcode == OpCodes.Stloc_3)
-                {
-                    yield return new CodeInstruction(opcode: OpCodes.Ldarg_0);
-                    yield return new CodeInstruction(opcode: OpCodes.Ldfld, operand:);
-                }
-            }
-        }*/
-
         private static void Command_VerbTarget_ProcessInputPostfix(Command_VerbTarget __instance)
         {
             if (!__instance.verb.IsMeleeAttack)
@@ -249,6 +232,44 @@ namespace VerbExpansionFramework
                 __instance.verb.CasterPawn.GetComp<VEF_Comp_Pawn_RangedVerbs>().SetCurRangedVerb(__instance.verb, null);
             }
             return;
+        }
+
+        private static void Command_VerbTarget_GizmoUpdateOnMousoverPostfix(Command_VerbTarget __instance)
+        {
+            if (__instance.verb.verbProps is VEF_VerbProperties_Explode verbPropsExplode)
+            {
+                verbPropsExplode.DrawExplodeRadiusRing(__instance.verb.caster.Position);
+                if ((List<Verb>)VEF_ReflectionData.FI_Command_VerbTarget_groupedVerbs.GetValue(__instance) is List<Verb> groupedExplosionVerbs && !groupedExplosionVerbs.NullOrEmpty<Verb>())
+                {
+                    foreach (Verb verb in groupedExplosionVerbs)
+                    {
+                        VEF_VerbProperties_Explode verbPropsExplode2 = (VEF_VerbProperties_Explode)verb.verbProps;
+                        verbPropsExplode2.DrawExplodeRadiusRing(verb.caster.Position);
+                    }
+                }
+            }
+        }
+
+        private static bool Explsoion_AffectCellPrefix(Explosion __instance, IntVec3 c)
+        {
+            if (__instance.instigator != null)
+            {
+                if (__instance.instigator is Pawn pawn)
+                {
+                    if (c == pawn.Position && pawn.CurrentEffectiveVerb.GetType() == typeof(VEF_Verb_ExplodeSafe))
+                    {
+                        return false;
+                    }
+                }
+                else if (__instance.instigator is Building turret)
+                {
+                    if (c == turret.Position && turret.def.building?.turretGunDef?.Verbs?.FirstOrDefault<VerbProperties>().verbClass == typeof(VEF_Verb_ExplodeSafe))
+                    {
+                        return false;
+                    }
+                }
+            }
+            return true;
         }
 
         private static void FloatMenuUtility_GetAttackActionPostfix(Pawn pawn, LocalTargetInfo target, out string failStr, ref Action __result)
@@ -390,7 +411,7 @@ namespace VerbExpansionFramework
                     }
                 }
             }
-            if (flag || (VEF_Comp_Pawn_RangedVerbs.ShouldUseSquadAttackGizmo() && VEF_Comp_Pawn_RangedVerbs.AtLeastOneSelectedPawnUsingOtherRangedVerb()))
+            if (flag || (VEF_Comp_Pawn_RangedVerbs.ShouldUseSquadAttackGizmo()))
             {
                 command_Target.defaultLabel = "CommandSquadEquipmentAttack".Translate();
                 command_Target.defaultDesc = "CommandSquadEquipmentAttackDesc".Translate();
@@ -478,9 +499,8 @@ namespace VerbExpansionFramework
 
         private static void Pawn_HealthTracker_PreApplyDamagePostfix(Pawn_HealthTracker __instance, DamageInfo dinfo)
         {
-            if(dinfo.Instigator != null)
+            if(dinfo.Instigator != null && VEF_ReflectionData.FI_Pawn_HealthTracker_pawn.GetValue(__instance) is Pawn pawn)
             {
-                Pawn pawn = (Pawn)VEF_ReflectionData.FI_Pawn_HealthTracker_pawn.GetValue(__instance);
                 foreach (Hediff hediff in pawn.health.hediffSet.hediffs)
                 {
                     if (hediff.TryGetComp<VEF_HediffComp_SmokepopDefense>() != null)
@@ -541,6 +561,14 @@ namespace VerbExpansionFramework
             return;
         }
 
+        private static void Targeter_TargeterUpdatePostfix(Targeter __instance)
+        {
+            if (__instance.targetingVerb != null && __instance.targetingVerb.verbProps is VEF_VerbProperties_Explode verbPropsExplode)
+            {
+                verbPropsExplode.DrawExplodeRadiusRing(__instance.targetingVerb.caster.Position);
+            }
+        }
+
         private static void ThoughtWorker_IsCarryingRangedWeapon_CurrentStateInternalPostfix(ref ThoughtState __result, Pawn p)
         {
             FieldInfo FI_stageInex = AccessTools.Field(type: typeof(ThoughtState), name: "stageIndex");
@@ -594,15 +622,6 @@ namespace VerbExpansionFramework
             }
         }
 
-        private static void Verb_CanHitTargetFromPostfix(Verb __instance, LocalTargetInfo targ, ref bool __result)
-        {
-            if (__result == true && __instance.CasterIsPawn && __instance.caster.TryGetComp<VEF_ThingComp_ShieldDefense>() is VEF_ThingComp_ShieldDefense comp && comp.ShieldState == ShieldState.Active && targ.Thing != __instance.caster)
-            {
-                __result = comp.AllowVerbCast(__instance.CasterPawn, targ, __instance);
-                return;
-            }
-        }
-
         private static IEnumerable<CodeInstruction> VerbProperties_GetDamageFactorForTranspiler(IEnumerable<CodeInstruction> codeInstructions)
         {
             List<CodeInstruction> instructionList = codeInstructions.ToList();
@@ -635,6 +654,19 @@ namespace VerbExpansionFramework
                 }
                 yield return instructionList[i];
             }
+        }
+
+        private static void VerbUtility_AllowAdjacentShotPostfix(Thing caster, ref bool __result)
+        {
+            if (!__result)
+            {
+                if (caster is Pawn casterPawn && casterPawn.TryGetComp<VEF_Comp_Pawn_RangedVerbs>() is VEF_Comp_Pawn_RangedVerbs comp && comp.CurRangedVerb?.verbProps.GetType() == typeof(VEF_VerbProperties_Explode))
+                {
+                    __result = true;
+                    return;
+                }
+            }
+            return;
         }
 
         // Harmony Patches for Mod Compatibility

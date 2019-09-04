@@ -38,6 +38,19 @@
 							<soundCastTail>GunTail_Light</soundCastTail>
 							<muzzleFlashScale>9</muzzleFlashScale>
 						</li>
+						<li Class="VerbExpansionFramework.VEF_VerbProperties_Explode">
+							<verbClass>VerbExpansionFramework.VEF_Verb_SelfDestruct</verbClass>
+							<label>inferno</label>
+							<hasStandardCommand>true</hasStandardCommand>
+							<defaultCooldownTime>9.9</defaultCooldownTime>
+							<warmupTime>0.1</warmupTime>
+							<ai_AvoidFriendlyFireRadius>7</ai_AvoidFriendlyFireRadius>
+							<range>4</range>
+							<explosionDamageAmount>8</explosionDamageAmount>
+							<explosionRadius>6</explosionRadius>
+							<explosionDamageType>Burn</explosionDamageType>
+							<chanceToStartFire>1</chanceToStartFire>
+						</li>
 					</verbs>
 				</value>
 			</li>

@@ -120,6 +120,29 @@ namespace VerbExpansionFramework
                             command_VerbTarget.icon = tempIcon;
                         }
                     }
+                    else
+                    {
+                        if (verb.HediffSource != null)
+                        {
+                            command_VerbTarget.defaultDesc = (verb.verbProps.label == verb.HediffSource.def.label) ? verb.HediffSource.def.LabelCap + ": " + verb.HediffSource.def.description.CapitalizeFirst() : verb.verbProps.label + " :: " + verb.HediffSource.LabelCap + ": " + verb.HediffSource.def.description.CapitalizeFirst();
+                            if (verb.HediffSource.def.spawnThingOnRemoved.uiIcon != null)
+                            {
+                                tempIcon = verb.HediffSource.def.spawnThingOnRemoved.uiIcon;
+                            }
+                        }
+                        else
+                        {
+                            command_VerbTarget.defaultDesc = (verb.verbProps.label == verb.CasterPawn.def.label) ? "Biological weapon of " + verb.CasterPawn.def.label + ": " + verb.CasterPawn.def.description.CapitalizeFirst() : CurRangedVerb.verbProps.label.CapitalizeFirst() + " :: Biological weapon of " + verb.CasterPawn.def.label + ": " + verb.CasterPawn.def.description.CapitalizeFirst();
+                            if (verb.CasterIsPawn && verb.CasterPawn.def.uiIcon != null)
+                            {
+                                tempIcon = verb.CasterPawn.def.uiIcon;
+                            }
+                        }
+                        if (tempIcon != null)
+                        {
+                            command_VerbTarget.icon = tempIcon;
+                        }
+                    }
                 }
             }
             else
@@ -172,7 +195,7 @@ namespace VerbExpansionFramework
                     ChooseRangedVerb(target);
                 }
             }
-            return this.curRangedVerb;
+            return this.CurRangedVerb;
         }
 
         private void ChooseRangedVerb(Thing target)
@@ -196,26 +219,36 @@ namespace VerbExpansionFramework
                     Verb verb = updatedAvailableVerbsList[i].verb;
                     float currentScore;
 
-                    if (target == null)
+                    if (verb.verbProps is VEF_VerbProperties_Explode verbPropsExplode)
                     {
+                        int explosionDamageAmount = Mathf.RoundToInt(verbPropsExplode.AdjustedExplosionDamageAmount(verb, verb.CasterPawn));
+                        float explosionRadius = verbPropsExplode.explosionRadius;
+                        float detonationRange = verb.verbProps.range;
 
-                        if (verb.verbProps.spawnDef != null)
-                        {
-                            currentScore = 50 + i;
-                        }
-                        else
-                        {
-                            ThingDef verbProjectile = verb.GetProjectile();
-                            int projectileDamageAmount = (verb.EquipmentSource == null) ? verbProjectile.projectile.GetDamageAmount(1f) : verbProjectile.projectile.GetDamageAmount(verb.EquipmentSource);
-                            List<float> accuracyList = (verb.EquipmentSource == null) ? new List<float>() { verb.verbProps.accuracyLong, verb.verbProps.accuracyMedium, verb.verbProps.accuracyShort } : new List<float>() { verb.EquipmentCompSource.parent.GetStatValue(StatDefOf.AccuracyLong), verb.EquipmentCompSource.parent.GetStatValue(StatDefOf.AccuracyMedium), verb.EquipmentCompSource.parent.GetStatValue(StatDefOf.AccuracyShort) };
-                            accuracyList.Sort();
-                            accuracyList.Reverse();
-                            float accuracyValue = (accuracyList[0] + accuracyList[1]) / 2;
-                            int burstShotCount = (verb.verbProps.burstShotCount == 0) ? 1 : verb.verbProps.burstShotCount;
-                            float fullCycleTime = verb.verbProps.AdjustedFullCycleTime(verb, this.Pawn);
+                        currentScore = explosionDamageAmount + explosionRadius - (detonationRange * 0.5f);
 
-                            currentScore = ((accuracyValue * projectileDamageAmount * burstShotCount) / (fullCycleTime)) + verbProjectile.projectile.explosionRadius - (verb.verbProps.forcedMissRadius / burstShotCount);
+                        if (currentScore > highestScore)
+                        {
+                            highestScore = currentScore;
+                            highestScoreIndex = i;
                         }
+                    }
+                    else if (verb.verbProps.spawnDef != null)
+                    {
+                        currentScore = 50 + i;
+                    }
+                    else if (target == null)
+                    {
+                        ThingDef verbProjectile = verb.GetProjectile();
+                        int projectileDamageAmount = (verb.EquipmentSource == null) ? verbProjectile.projectile.GetDamageAmount(1f) : verbProjectile.projectile.GetDamageAmount(verb.EquipmentSource);
+                        List<float> accuracyList = (verb.EquipmentSource == null) ? new List<float>() { verb.verbProps.accuracyLong, verb.verbProps.accuracyMedium, verb.verbProps.accuracyShort } : new List<float>() { verb.EquipmentCompSource.parent.GetStatValue(StatDefOf.AccuracyLong), verb.EquipmentCompSource.parent.GetStatValue(StatDefOf.AccuracyMedium), verb.EquipmentCompSource.parent.GetStatValue(StatDefOf.AccuracyShort) };
+                        accuracyList.Sort();
+                        accuracyList.Reverse();
+                        float accuracyValue = (accuracyList[0] + accuracyList[1]) / 2;
+                        int burstShotCount = (verb.verbProps.burstShotCount == 0) ? 1 : verb.verbProps.burstShotCount;
+                        float fullCycleTime = verb.verbProps.AdjustedFullCycleTime(verb, this.Pawn);
+
+                        currentScore = ((accuracyValue * projectileDamageAmount * burstShotCount) / (fullCycleTime)) + verbProjectile.projectile.explosionRadius - (verb.verbProps.forcedMissRadius / burstShotCount);
 
                         if (currentScore > highestScore)
                         {
@@ -225,28 +258,21 @@ namespace VerbExpansionFramework
                     }
                     else
                     {
-                        if (verb.verbProps.spawnDef != null)
-                        {
-                            currentScore = 50 + i;
-                        }
-                        else
-                        {
-                            ThingDef verbProjectile = verb.GetProjectile();
-                            int projectileDamageAmount = (verb.EquipmentSource == null) ? verbProjectile.projectile.GetDamageAmount(1f) : verbProjectile.projectile.GetDamageAmount(verb.EquipmentSource);
-                            float accuracyValue = Verse.ShotReport.HitReportFor(Pawn, verb, target).TotalEstimatedHitChance;
-                            int burstShotCount = (verb.verbProps.burstShotCount == 0) ? 1 : verb.verbProps.burstShotCount;
-                            float fullCycleTime = verb.verbProps.AdjustedFullCycleTime(verb, this.Pawn);
+                        ThingDef verbProjectile = verb.GetProjectile();
+                        int projectileDamageAmount = (verb.EquipmentSource == null) ? verbProjectile.projectile.GetDamageAmount(1f) : verbProjectile.projectile.GetDamageAmount(verb.EquipmentSource);
+                        float accuracyValue = Verse.ShotReport.HitReportFor(Pawn, verb, target).TotalEstimatedHitChance;
+                        int burstShotCount = (verb.verbProps.burstShotCount == 0) ? 1 : verb.verbProps.burstShotCount;
+                        float fullCycleTime = verb.verbProps.AdjustedFullCycleTime(verb, this.Pawn);
 
-                            currentScore = ((accuracyValue * projectileDamageAmount * burstShotCount) / (fullCycleTime)) + verbProjectile.projectile.explosionRadius - (verb.verbProps.forcedMissRadius / burstShotCount);
-                            if (verb.IsIncendiary() && target.CanEverAttachFire() && !target.IsBurning())
-                            {
-                                currentScore += 10;
-                            }
-                            Pawn targetPawn = target as Pawn;
-                            if (targetPawn != null && verb.IsEMP() && !targetPawn.RaceProps.IsFlesh)
-                            {
-                                currentScore += 10;
-                            }
+                        currentScore = ((accuracyValue * projectileDamageAmount * burstShotCount) / (fullCycleTime)) + verbProjectile.projectile.explosionRadius - (verb.verbProps.forcedMissRadius / burstShotCount);
+                        if (verb.IsIncendiary() && target.CanEverAttachFire() && !target.IsBurning())
+                        {
+                            currentScore += 10;
+                        }
+                        Pawn targetPawn = target as Pawn;
+                        if (targetPawn != null && verb.IsEMP() && !targetPawn.RaceProps.IsFlesh)
+                        {
+                            currentScore += 10;
                         }
 
                         if (currentScore > highestScore)

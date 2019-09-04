@@ -26,6 +26,7 @@ namespace VerbExpansionFramework
         //Fields
         //Core
         public static FieldInfo FI_Bullet_WeaponDamageMultiplier = AccessTools.Field(type: typeof(Bullet), name: "weaponDamageMultiplier");
+        public static FieldInfo FI_Command_VerbTarget_groupedVerbs = AccessTools.Field(type: typeof(Command_VerbTarget), name: "groupedVerbs");
         public static FieldInfo FI_Pawn_HealthTracker_pawn = AccessTools.Field(type: typeof(Pawn_HealthTracker), name: "pawn");
 
         //Methods
