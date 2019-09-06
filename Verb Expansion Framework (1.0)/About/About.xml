@@ -15,8 +15,11 @@ Features
 - Colonists that have Ranged Verbs but do not have any Equipment will display and respect the Toggle Fire-at-Will gizmo.
 - Ranged Verbs from Hediffs display all of the appropriate interactions with the Brawler Trait (unhappy thought, 'Brawler has Ranged Weapon' warning in sidebar, and the Operations 'Add Bill' Menu will display the 'Brawler will be unhappy' warning for appropriate operations).
 - All bleeding-capable pawns have their total bleed rate multiplied by the new Bleed Rate Capacity.
-- Implements versions of Explosions, Extinguishers, and Flames that do not trigger camera shake. Provided by Ogliss.
+- Implements VEF_Verb_ShootBody, which modifies the damage dealt based on the body size of the pawn using the verb.
+- Implements three different explosion verbs: VEF_Verb_Explode, VEF_Verb_ExplodeSafe and VEF_Verb_SelfDestruct.
+- Implements versions of Explosions, Extinguishers, and Flames that do not trigger camera shake. Created by BadDog, sma342, Mehni, Erdelf and Ogliss. Maintained and provided by Ogliss.
 - Implements HediffComp and ThingComp versions of Smokepop Belt.
-- Implements HediffComp HealthModifier (Legacy), HealthModifier Capacity and HealthModifierFactor Capacity.
+- Implements HediffComp HealthModifier (Legacy) and Health Capacities.
+- Implements HediffSets, allowing you to lock powerful bonuses or penalties behind multiple prerequisite hediffs.
 	</description>
 </ModMetaData>

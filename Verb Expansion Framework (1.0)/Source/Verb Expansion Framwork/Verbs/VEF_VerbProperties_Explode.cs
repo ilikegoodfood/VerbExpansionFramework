@@ -31,11 +31,11 @@ namespace VerbExpansionFramework
             }
         }
 
-        public float explosionRadius;
+        public float explosionRadius = 0f;
 
         public DamageDef explosionDamageType;
 
-        public int explosionDamageAmount;
+        public int explosionDamageAmount = -1;
 
         public SoundDef explosionSound;
 
