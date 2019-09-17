@@ -47,12 +47,14 @@ namespace VerbExpansionFramework
             }
 
             int count = 0;
-            
+            List<Hediff> allHediffs = Pawn.health.hediffSet.hediffs;
+
             foreach (HediffDef hediffDef in this.hediffSetDef.hediffParts)
             {
-                if (Pawn.health.hediffSet.hediffs.FirstOrDefault(h => h.def == hediffDef) != null)
+                if (allHediffs.FirstOrDefault(h => h.def == hediffDef) is Hediff hediff)
                 {
                     count += 1;
+                    allHediffs.Remove(hediff);
                 }
             }
 
@@ -60,8 +62,17 @@ namespace VerbExpansionFramework
 
             HediffDef hediffDefIncomplete = hediffSetDef.setHediffIncomplete;
             HediffDef hediffDefComplete = hediffSetDef.setHediff;
-            Hediff hediffIncomplete = Pawn.health.hediffSet.hediffs.FirstOrDefault(h => h.def == hediffDefIncomplete);
-            Hediff hediffComplete = Pawn.health.hediffSet.hediffs.FirstOrDefault(h => h.def == hediffDefComplete);
+            Hediff hediffIncomplete = null;
+            Hediff hediffComplete = null;
+
+            if (hediffDefIncomplete != null)
+            {
+                hediffIncomplete = Pawn.health.hediffSet.hediffs.FirstOrDefault(h => h.def == hediffDefIncomplete);
+            }
+            if (hediffDefComplete != null)
+            {
+                hediffComplete = Pawn.health.hediffSet.hediffs.FirstOrDefault(h => h.def == hediffDefComplete);
+            }
 
             if (count == 0)
             {
@@ -81,7 +92,7 @@ namespace VerbExpansionFramework
                 {
                     Pawn.health.RemoveHediff(hediffIncomplete);
                 }
-                if (hediffComplete == null)
+                if (hediffComplete == null && hediffDefComplete != null)
                 {
                     Pawn.health.AddHediff(hediffDefComplete);
                 }
@@ -92,7 +103,7 @@ namespace VerbExpansionFramework
                 {
                     Pawn.health.RemoveHediff(hediffComplete);
                 }
-                if (hediffIncomplete == null)
+                if (hediffIncomplete == null && hediffDefIncomplete != null)
                 {
                     Pawn.health.AddHediff(hediffDefIncomplete);
                 }

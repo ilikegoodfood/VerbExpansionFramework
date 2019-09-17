@@ -49,7 +49,9 @@ namespace VerbExpansionFramework
             harmony.Patch(original: AccessTools.Method(type: typeof(Targeter), name: "GetTargetingVerb"), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(Targeter_GetTargetingVerbPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(Targeter), name: nameof(Targeter.TargeterUpdate)), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(Targeter_TargeterUpdatePostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(ThoughtWorker_IsCarryingRangedWeapon), name: "CurrentStateInternal"), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(ThoughtWorker_IsCarryingRangedWeapon_CurrentStateInternalPostfix)));
-            harmony.Patch(original: AccessTools.Method(type: typeof(VerbProperties), name: nameof(VerbProperties.GetDamageFactorFor), parameters: new Type[] { typeof(Tool), typeof(Pawn), typeof(HediffComp_VerbGiver) }), prefix: null, postfix: null, transpiler: new HarmonyMethod(type: patchType, name: nameof(VerbProperties_GetDamageFactorForTranspiler)));
+            harmony.Patch(original: AccessTools.Method(type: typeof(Verb_ShootOneUse), name: "SelfConsume"), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(Verb_ShootOneUse_SelfConsumePostfix)));
+            harmony.Patch(original: AccessTools.Method(type: typeof(Verb_Spawn), name: "TryCastShot"), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(Verb_Spawn_TryCastShotPostfix)));
+            harmony.Patch(original: AccessTools.Method(type: typeof(VerbProperties), name: nameof(VerbProperties.GetDamageFactorFor), parameters: new Type[] { typeof(Tool), typeof(Pawn), typeof(HediffComp_VerbGiver) }), prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(VerbProperties_GetDamageFactorForPostfix)), transpiler: new HarmonyMethod(type: patchType, name: nameof(VerbProperties_GetDamageFactorForTranspiler)));
             harmony.Patch(original: AccessTools.Method(type: typeof(VerbUtility), name: nameof(VerbUtility.AllowAdjacentShot)), prefix: null, postfix: new HarmonyMethod(type:patchType, name: nameof(VerbUtility_AllowAdjacentShotPostfix)));
 
             //  UpdateHediffSetPostfix (instrcucts HediffSets on pawn to update when a hediff changed)
@@ -620,6 +622,40 @@ namespace VerbExpansionFramework
                     comp.TryGetRangedVerb(pawn.mindState.enemyTarget);
                 }
             }
+        }
+
+        private static void Verb_Spawn_TryCastShotPostfix(Verb_Spawn __instance, bool __result)
+        {
+            if (__result && __instance.HediffSource != null)
+            {
+                __instance.HediffSource.pawn.health.hediffSet.hediffs.Remove(__instance.HediffSource);
+            }
+        }
+
+        private static void Verb_ShootOneUse_SelfConsumePostfix(Verb_ShootOneUse __instance)
+        {
+            if (__instance.HediffSource != null)
+            {
+                __instance.HediffSource.pawn.health.hediffSet.hediffs.Remove(__instance.HediffSource);
+            }
+        }
+
+        private static void VerbProperties_GetDamageFactorForPostfix(VerbProperties __instance, Tool tool, Pawn attacker, HediffComp_VerbGiver hediffCompSource, ref float __result)
+        {
+            if (tool == null && __instance.linkedBodyPartsGroup != null)
+            {
+                float damageFactor = PawnCapacityUtility.CalculateNaturalPartsAverageEfficiency(attacker.health.hediffSet, __instance.linkedBodyPartsGroup);
+                if (__instance.ensureLinkedBodyPartsGroupAlwaysUsable)
+                {
+                    return;
+                }
+                else if (damageFactor == 0f)
+                {
+                    __result = 0f;
+                    return;
+                }
+            }
+            return;
         }
 
         private static IEnumerable<CodeInstruction> VerbProperties_GetDamageFactorForTranspiler(IEnumerable<CodeInstruction> codeInstructions)

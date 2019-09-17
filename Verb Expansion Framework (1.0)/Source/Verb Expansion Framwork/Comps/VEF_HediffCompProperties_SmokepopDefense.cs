@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace VerbExpansionFramework
 {
-    class VEF_HediffCompProperties_SmokepopDefense : HediffCompProperties
+    public class VEF_HediffCompProperties_SmokepopDefense : HediffCompProperties
     {
         public VEF_HediffCompProperties_SmokepopDefense()
         {

@@ -96,6 +96,9 @@
     <Compile Include="Comps\VEF_ThingComp_HediffSet.cs" />
     <Compile Include="Comps\VEF_GameComp_Slayer.cs" />
     <Compile Include="DataClasses\VEF_KillInfo.cs" />
+    <None Include="Comps\VEF_HediffCompProperties_Refuelable.cs" />
+    <None Include="Comps\VEF_HediffCompWithGizmo.cs" />
+    <None Include="Comps\VEF_HediffComp_Refuelable.cs" />
     <Compile Include="VEF_Verb_ExplodeSafe.cs" />
     <Compile Include="Verbs\VEF_Verb_SelfDestruct.cs" />
     <Compile Include="Verbs\VEF_VerbProperties_Explode.cs" />

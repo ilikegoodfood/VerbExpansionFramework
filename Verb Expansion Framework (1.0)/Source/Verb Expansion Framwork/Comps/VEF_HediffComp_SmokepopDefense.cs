@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace VerbExpansionFramework
 {
-    class VEF_HediffComp_SmokepopDefense : HediffComp
+    public class VEF_HediffComp_SmokepopDefense : HediffComp
     {
         public VEF_HediffCompProperties_SmokepopDefense Props
         {
@@ -30,7 +30,7 @@ namespace VerbExpansionFramework
             {
                 if (!dinfo.Def.isExplosive && dinfo.Def.harmsHealth && dinfo.Def.ExternalViolenceFor(Pawn))
                 {
-                    if (dinfo.Instigator is Pawn instigatorPawn && instigatorPawn.GetComp<VEF_Comp_Pawn_RangedVerbs>().CurRangedVerb != null && instigatorPawn.Position.DistanceTo(Pawn.Position) > 1f)
+                    if (dinfo.Instigator is Pawn instigatorPawn && !instigatorPawn.TryGetAttackVerb(dinfo.IntendedTarget, !instigatorPawn.IsColonistPlayerControlled).IsMeleeAttack && instigatorPawn.Position.DistanceTo(this.Pawn.Position) > 1.42f)
                     {
                         IntVec3 position = Pawn.Position;
                         Map map = Pawn.Map;
