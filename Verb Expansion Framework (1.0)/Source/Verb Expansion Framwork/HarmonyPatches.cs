@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -278,27 +278,33 @@ namespace VerbExpansionFramework
             return;
         }
 
-        private static void HealthCardUtility_GenerateSurgeryOptionPostfix(Thing thingForMedBills, RecipeDef recipe, ref FloatMenuOption __result)
-        {
-            Pawn pawn = (Pawn)thingForMedBills;
-            if (pawn == null || pawn.story == null || !pawn.story.traits.HasTrait(TraitDefOf.Brawler))
-            {
-                return;
-            }
-            else if (recipe.addsHediff != null && recipe.addsHediff.HasComp(typeof(HediffComp_VerbGiver)))
-            {
-                bool flag = false;
-                foreach (VerbProperties verb in recipe.addsHediff.CompProps<HediffCompProperties_VerbGiver>().verbs)
-                {
-                    if (!verb.IsMeleeAttack)
-                    {
-                        flag = true;
-                        break;
-                    }
-                }
-                if (flag)
-                {
-                    __result.Label = __result.Label + " " + "EquipWarningBrawler".Translate();
+		private static void HealthCardUtility_GenerateSurgeryOptionPostfix(Thing thingForMedBills, RecipeDef recipe, ref FloatMenuOption __result)
+		{
+			Pawn pawn = thingForMedBills as Pawn;
+
+			if (!(pawn?.story?.traits?.HasTrait(TraitDefOf.Brawler) ?? false)) 
+			{
+				return; // not a Brawler
+			}
+
+			if (recipe?.addsHediff != null && recipe.addsHediff.HasComp(typeof(HediffComp_VerbGiver))) // has VerbGiver
+			{
+                bool hasRangedAttack = false;
+				var verbs = recipe.addsHediff.CompProps<HediffCompProperties_VerbGiver>().verbs;
+				if (verbs != null) // and has verbs in it
+				{
+					foreach (VerbProperties verb in verbs)
+					{
+						if (!verb.IsMeleeAttack)
+						{
+							hasRangedAttack = true;
+							break;
+						}
+					}
+				}
+                if (hasRangedAttack)
+				{
+					__result.Label = __result.Label + " " + "EquipWarningBrawler".Translate();
                 }
             }
             return;
