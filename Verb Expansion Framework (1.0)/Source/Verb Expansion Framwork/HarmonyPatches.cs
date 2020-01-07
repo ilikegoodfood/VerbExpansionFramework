@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -278,33 +278,33 @@ namespace VerbExpansionFramework
             return;
         }
 
-		private static void HealthCardUtility_GenerateSurgeryOptionPostfix(Thing thingForMedBills, RecipeDef recipe, ref FloatMenuOption __result)
-		{
-			Pawn pawn = thingForMedBills as Pawn;
+        private static void HealthCardUtility_GenerateSurgeryOptionPostfix(Thing thingForMedBills, RecipeDef recipe, ref FloatMenuOption __result)
+        {
+            Pawn pawn = thingForMedBills as Pawn;
 
-			if (!(pawn?.story?.traits?.HasTrait(TraitDefOf.Brawler) ?? false)) 
-			{
-				return; // not a Brawler
-			}
+            if (!(pawn?.story?.traits?.HasTrait(TraitDefOf.Brawler) ?? false))
+            {
+                return; // not a Brawler
+            }
 
-			if (recipe?.addsHediff != null && recipe.addsHediff.HasComp(typeof(HediffComp_VerbGiver))) // has VerbGiver
-			{
+            if (recipe?.addsHediff != null && recipe.addsHediff.HasComp(typeof(HediffComp_VerbGiver))) // has VerbGiver
+            {
                 bool hasRangedAttack = false;
-				var verbs = recipe.addsHediff.CompProps<HediffCompProperties_VerbGiver>().verbs;
-				if (verbs != null) // and has verbs in it
-				{
-					foreach (VerbProperties verb in verbs)
-					{
-						if (!verb.IsMeleeAttack)
-						{
-							hasRangedAttack = true;
-							break;
-						}
-					}
-				}
+                var verbs = recipe.addsHediff.CompProps<HediffCompProperties_VerbGiver>().verbs;
+                if (verbs != null) // and has verbs in it
+                {
+                    foreach (VerbProperties verb in verbs)
+                    {
+                        if (!verb.IsMeleeAttack)
+                        {
+                            hasRangedAttack = true;
+                            break;
+                        }
+                    }
+                }
                 if (hasRangedAttack)
-				{
-					__result.Label = __result.Label + " " + "EquipWarningBrawler".Translate();
+                {
+                    __result.Label = __result.Label + " " + "EquipWarningBrawler".Translate();
                 }
             }
             return;
