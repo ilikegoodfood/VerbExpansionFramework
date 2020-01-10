@@ -280,23 +280,29 @@ namespace VerbExpansionFramework
 
         private static void HealthCardUtility_GenerateSurgeryOptionPostfix(Thing thingForMedBills, RecipeDef recipe, ref FloatMenuOption __result)
         {
-            Pawn pawn = (Pawn)thingForMedBills;
-            if (pawn == null || pawn.story == null || !pawn.story.traits.HasTrait(TraitDefOf.Brawler))
+            Pawn pawn = thingForMedBills as Pawn;
+
+            if (!(pawn?.story?.traits?.HasTrait(TraitDefOf.Brawler) ?? false))
             {
-                return;
+                return; // not a Brawler
             }
-            else if (recipe.addsHediff != null && recipe.addsHediff.HasComp(typeof(HediffComp_VerbGiver)))
+
+            if (recipe?.addsHediff != null && recipe.addsHediff.HasComp(typeof(HediffComp_VerbGiver))) // has VerbGiver
             {
-                bool flag = false;
-                foreach (VerbProperties verb in recipe.addsHediff.CompProps<HediffCompProperties_VerbGiver>().verbs)
+                bool hasRangedAttack = false;
+                var verbs = recipe.addsHediff.CompProps<HediffCompProperties_VerbGiver>().verbs;
+                if (verbs != null) // and has verbs in it
                 {
-                    if (!verb.IsMeleeAttack)
+                    foreach (VerbProperties verb in verbs)
                     {
-                        flag = true;
-                        break;
+                        if (!verb.IsMeleeAttack)
+                        {
+                            hasRangedAttack = true;
+                            break;
+                        }
                     }
                 }
-                if (flag)
+                if (hasRangedAttack)
                 {
                     __result.Label = __result.Label + " " + "EquipWarningBrawler".Translate();
                 }
